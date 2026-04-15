@@ -26,7 +26,7 @@ Create a GitHub repo and push this code. Note your `org/repo` slug — you'll us
 In your Webflow project's **staging site** (the `.webflow.io` domain), add script tags to the appropriate location (global `<head>`/`<body>` or per-page):
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/YOUR_ORG/YOUR_REPO@staging/scripts/example/index.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/mark-superbrick/new-word-order@staging/scripts/example/index.js"></script>
 ```
 
 These URLs are set once and never changed. Pushing to the `staging` branch updates what jsDelivr serves.
@@ -36,7 +36,7 @@ These URLs are set once and never changed. Pushing to the `staging` branch updat
 Same as above but pointing at `@main`:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/YOUR_ORG/YOUR_REPO@main/scripts/example/index.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/mark-superbrick/new-word-order@main/scripts/example/index.js"></script>
 ```
 
 ### 4. Requestly browser extension
@@ -47,12 +47,12 @@ Create a **Redirect Rule**:
 
 | Field | Value |
 |---|---|
-| Source URL — Contains | `cdn.jsdelivr.net/gh/YOUR_ORG/YOUR_REPO` |
+| Source URL — Contains | `cdn.jsdelivr.net/gh/mark-superbrick/new-word-order` |
 | Redirect To | `http://localhost:3000/$1` (use the path wildcard for your script) |
 
 For a single active script during dev, a simpler rule works well:
 
-| Source URL — Equals | `https://cdn.jsdelivr.net/gh/YOUR_ORG/YOUR_REPO@staging/scripts/example/index.js` |
+| Source URL — Equals | `https://cdn.jsdelivr.net/gh/mark-superbrick/new-word-order@staging/scripts/example/index.js` |
 |---|---|
 | Redirect To | `http://localhost:3000/scripts/example/index.js` |
 
@@ -111,12 +111,12 @@ Same Actions workflow runs on `main`, purging the `@main` jsDelivr cache. The pr
 
 2. Add the staging script tag to Webflow staging custom code (one-time):
    ```html
-   <script src="https://cdn.jsdelivr.net/gh/YOUR_ORG/YOUR_REPO@staging/scripts/my-new-script/index.js"></script>
+   <script src="https://cdn.jsdelivr.net/gh/mark-superbrick/new-word-order@staging/scripts/my-new-script/index.js"></script>
    ```
 
 3. Add the production script tag to Webflow production custom code (one-time):
    ```html
-   <script src="https://cdn.jsdelivr.net/gh/YOUR_ORG/YOUR_REPO@main/scripts/my-new-script/index.js"></script>
+   <script src="https://cdn.jsdelivr.net/gh/mark-superbrick/new-word-order@main/scripts/my-new-script/index.js"></script>
    ```
 
 4. Add a Requestly redirect rule for local dev.
@@ -132,13 +132,13 @@ Same Actions workflow runs on `main`, purging the `@main` jsDelivr cache. The pr
 http://localhost:3000/scripts/<name>/index.js
 
 # Staging CDN
-https://cdn.jsdelivr.net/gh/YOUR_ORG/YOUR_REPO@staging/scripts/<name>/index.js
+https://cdn.jsdelivr.net/gh/mark-superbrick/new-word-order@staging/scripts/<name>/index.js
 
 # Production CDN
-https://cdn.jsdelivr.net/gh/YOUR_ORG/YOUR_REPO@main/scripts/<name>/index.js
+https://cdn.jsdelivr.net/gh/mark-superbrick/new-word-order@main/scripts/<name>/index.js
 ```
 
-Replace `YOUR_ORG/YOUR_REPO` with your actual GitHub `org/repo` slug throughout.
+Replace `mark-superbrick/new-word-order` with your actual GitHub `org/repo` slug throughout.
 
 ---
 

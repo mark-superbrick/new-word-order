@@ -5,10 +5,10 @@
  *   Add data-example="true" to any element to log its text content on click.
  *
  * Staging CDN:
- *   https://cdn.jsdelivr.net/gh/YOUR_ORG/YOUR_REPO@staging/scripts/example/index.js
+ *   https://cdn.jsdelivr.net/gh/mark-superbrick/new-word-order@staging/scripts/example/index.js
  *
  * Production CDN:
- *   https://cdn.jsdelivr.net/gh/YOUR_ORG/YOUR_REPO@main/scripts/example/index.js
+ *   https://cdn.jsdelivr.net/gh/mark-superbrick/new-word-order@main/scripts/example/index.js
  */
 
 (function () {
