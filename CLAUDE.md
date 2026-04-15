@@ -13,7 +13,7 @@ Create `scripts/<name>/index.js`. Add the jsDelivr URL to Webflow's custom code 
 ## Dev Commands
 
 ```
-npm run dev        # live-server on localhost:3000 with CORS (for Requestly intercept)
+npm run dev        # browser-sync on localhost:3002 with CORS + directory listing (for Requestly intercept)
 npm run dev:open   # same but opens the browser
 ```
 

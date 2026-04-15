@@ -54,7 +54,7 @@ For a single active script during dev, a simpler rule works well:
 
 | Source URL — Equals | `https://cdn.jsdelivr.net/gh/mark-superbrick/new-word-order@staging/scripts/example/index.js` |
 |---|---|
-| Redirect To | `http://localhost:3000/scripts/example/index.js` |
+| Redirect To | `http://localhost:3002/scripts/example/index.js` |
 
 Duplicate this rule for each script you're actively developing. Toggle rules on/off as needed.
 
@@ -64,7 +64,7 @@ Duplicate this rule for each script you're actively developing. Toggle rules on/
 
 ```
 npm install        # first time only
-npm run dev        # starts live-server on http://localhost:3000
+npm run dev        # starts browser-sync on http://localhost:3002
 ```
 
 1. Enable the Requestly rule for the script you're working on
@@ -129,7 +129,7 @@ Same Actions workflow runs on `main`, purging the `@main` jsDelivr cache. The pr
 
 ```
 # Local dev (intercepted by Requestly)
-http://localhost:3000/scripts/<name>/index.js
+http://localhost:3002/scripts/<name>/index.js
 
 # Staging CDN
 https://cdn.jsdelivr.net/gh/mark-superbrick/new-word-order@staging/scripts/<name>/index.js
