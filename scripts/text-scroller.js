@@ -28,6 +28,9 @@ function initTextScroller() {
 
     // Give each slide a z-index so incoming slides appear above previous
     items.forEach((el, idx) => {
+      el.style.position = "absolute";
+      el.style.height = "100svh";
+      el.style.opacity = 0;
       el.style.zIndex = idx + 1;
       // Ensure hardware acceleration and that filter will be animatable
       el.style.willChange = 'transform, opacity, filter';
