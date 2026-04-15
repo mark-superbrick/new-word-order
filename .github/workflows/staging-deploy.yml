@@ -1,0 +1,42 @@
+name: Staging — Purge jsDelivr Cache
+
+on:
+  push:
+    branches: [staging]
+    paths: ["scripts/**"]
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changed script files
+        id: diff
+        run: |
+          FILES=$(git diff --name-only HEAD~1 HEAD -- 'scripts/**/*.js')
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Purge jsDelivr cache (staging)
+        if: steps.diff.outputs.files != ''
+        env:
+          REPO: ${{ github.repository }}
+          CHANGED_FILES: ${{ steps.diff.outputs.files }}
+        run: |
+          while IFS= read -r file; do
+            [[ -z "$file" ]] && continue
+            URL="https://purge.jsdelivr.net/gh/${REPO}@staging/${file}"
+            echo "Purging: $URL"
+            curl --silent --fail "$URL" && echo " done" || echo " failed (non-fatal)"
+          done <<< "$CHANGED_FILES"
+
+      - name: Summary
+        run: |
+          echo "### Staging deploy complete" >> $GITHUB_STEP_SUMMARY
+          echo "Branch: \`staging\` — jsDelivr cache purged for changed scripts." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Test on your Webflow staging (.webflow.io) site." >> $GITHUB_STEP_SUMMARY
