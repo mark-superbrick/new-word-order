@@ -52,16 +52,18 @@ function initHeroAnimations() {
         heroImg.addEventListener("load", heroTL, { once: true });
       }
 
+
       function heroTL() {
+        const totalScroll = window.innerHeight * 2;
         const scrollTl = gsap.timeline({
           scrollTrigger: {
             trigger: heroMain,
             start: "top top",
-            end: () => `+=${window.innerHeight * 2}`,
+            end: () => `+=${totalScroll}`,
             // end: "bottom top",
             scrub: true,
             pin: true,
-            pinSpacing: true,         // <-- was false; now reserves scroll distance so alt_wrap no longer overlaps
+            pinSpacing: false,         // <-- was false; now reserves scroll distance so alt_wrap no longer overlaps
             invalidateOnRefresh: true,
             markers: DEBUG,
             id: "main",
