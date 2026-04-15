@@ -145,5 +145,5 @@ Replace `mark-superbrick/new-word-order` with your actual GitHub `org/repo` slug
 ## Notes
 
 - **jsDelivr caching:** Branch-pinned URLs are cached. The GitHub Actions workflows call the jsDelivr purge API on every push — without this, changes can take up to 24h to propagate.
-- **live-server CORS:** The `--cors` flag is required so the Webflow staging page (a different origin) can load scripts from localhost.
+- **browser-sync CORS:** The `--cors` flag is required so the Webflow staging page (a different origin) can load scripts from localhost.
 - **No build step:** Scripts are plain JS files served as-is. If you add a build step later (TypeScript, minification), update `npm run dev` and `npm run build` accordingly and adjust the Actions workflows to build before purging.

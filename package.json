@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "live-server --port=3000 --cors --no-browser",
-    "dev:open": "live-server --port=3000 --cors"
+    "dev": "browser-sync start --server --port 3000 --cors --no-open --files 'scripts/**/*.js'",
+    "dev:open": "browser-sync start --server --port 3000 --cors --files 'scripts/**/*.js'"
   },
   "devDependencies": {
-    "live-server": "^1.2.2"
+    "browser-sync": "^3.0.3"
   }
 }
