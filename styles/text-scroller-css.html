@@ -1,0 +1,71 @@
+<style>
+
+/* Section scroller: make items full-screen and absolute so they can be scrolled into view with animations */
+.text_scroller_wrap {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 999;
+}
+
+.text_scroller {
+  height: 100dvh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.text_scroller_list {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.text_scroller_item {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  /* include filter in will-change so the browser can optimize blur transitions */
+  will-change: transform, opacity, filter;
+  pointer-events: none;
+  transform: translateY(0); /* GSAP will override y */
+  /* start blurred for fade-in; CSS transition will animate blur to 0 when becoming active */
+  /* filter: blur(40px); */
+  /* transition: opacity 0.6s cubic-bezier(0.625, 0.05, 0, 1), filter 0.6s cubic-bezier(0.625, 0.05, 0, 1); */
+}
+
+
+
+.text_scroller_item.is-active {
+  opacity: 1;
+  pointer-events: auto;
+  /* remove blur when active */
+  /* filter: blur(0); */
+  /* transition: opacity 0.6s cubic-bezier(0.625, 0.05, 0, 1), filter 0.6s cubic-bezier(0.625, 0.05, 0, 1); */
+}
+
+.wf-design-mode .text_scroller_item {
+  opacity: 1;
+  /* filter: blur(0px); */
+  height: auto;
+  position: relative;
+  pointer-events: auto;
+}
+
+/* Prevent inner content creating unexpected spacing while full-screen */
+/* .text_scroller_item .heading_wrap, .text_scroller_item .text-rich-text {
+  width: 100%;
+} */
+
+</style>
