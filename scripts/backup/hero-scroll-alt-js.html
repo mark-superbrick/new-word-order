@@ -1,0 +1,479 @@
+<!--
+<script>
+
+// Hero entry + scroll animations
+function initHeroAltAnimations() {
+if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
+  // Wait for GSAP + ScrollTrigger to be available
+  console.warn('GSAP or ScrollTrigger not available yet. Retrying...');
+  setTimeout(initHeroAltAnimations, 100);
+  return;
+}
+
+gsap.registerPlugin(ScrollTrigger);
+
+const hero = document.querySelector('.home_hero_wrap');
+if (!hero) return;
+
+const background = hero.querySelector('.background_overlay');
+const spark = hero.querySelector('.home_hero_spark');
+const content = hero.querySelector('.home_hero_content');
+// Fallback: look for any element with a data-number attribute inside hero
+const mediaOverlay = hero.querySelector('.media_overlay') || hero.querySelector('[data-number]');
+
+// Ensure initial states
+if (background) gsap.set(background, { autoAlpha: 0 });
+if (spark) gsap.set(spark, { scale: 5, transformOrigin: '50% 50%' });
+if (content) gsap.set(content, { xPercent: 100, autoAlpha: 1 });
+if (mediaOverlay && mediaOverlay.dataset) mediaOverlay.setAttribute('data-number', mediaOverlay.dataset.number || '0');
+
+// Entry animation timeline
+const entry = gsap.timeline({ defaults: { duration: 1, ease: 'power3.out' } });
+
+entry.to(background || {}, { autoAlpha: 1 }, 0);
+entry.to(spark || {}, { scale: 3, transformOrigin: '50% 50%' }, 0);
+entry.to(content || {}, { xPercent: 0 }, 0.05);
+
+// After entry completes, wire up scroll-triggered animations
+entry.call(() => {
+  // Build a scroll timeline that scrubs with scroll progress
+  const endPoint = '+=200%';
+
+  const scrollTl = gsap.timeline({
+    scrollTrigger: {
+      trigger: hero,
+      start: 'top top',
+      end: () => `+=${window.innerHeight * 2}`,
+      scrub: true,
+      pin: true,
+      pinSpacing: false,
+      invalidateOnRefresh: true,
+      markers: true,
+      // update the data-number attribute as scroll progresses
+      onUpdate(self) {
+        const progress = Math.max(0, Math.min(1, self.progress || 0));
+        const value = Math.round(progress * 100);
+        if (mediaOverlay && mediaOverlay.setAttribute) mediaOverlay.setAttribute('data-number', String(value));
+      }
+    }
+  });
+
+  // While scrolling: spark rotates slowly and scales down to 1 (from its current scale ~3)
+  if (spark) scrollTl.to(spark, { rotation: 360, scale: 1, transformOrigin: '50% 50%', ease: 'none' }, 0);
+
+  // Content moves from center to left (animate xPercent to -30%)
+  if (content) scrollTl.to(content, { xPercent: -30, opacity: 0, ease: 'none' }, 0);
+
+}, null, '+=0');
+}
+
+// Initialize on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', initHeroAltAnimations);
+
+// Also attempt to init if scripts are parsed after DOMContentLoaded
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+setTimeout(initHeroAltAnimations, 0);
+}
+
+</script>
+-->
+<!--
+<script>
+// Hero entry + scroll animations
+function initHeroAltAnimations() {
+  if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") {
+    // Wait for GSAP + ScrollTrigger to be available
+    console.warn("GSAP or ScrollTrigger not available yet. Retrying...");
+    setTimeout(initHeroAltAnimations, 100);
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const heroMain = document.querySelector(".home_hero_wrap");
+
+  const background = heroMain.querySelector(".background_overlay");
+  const spark = heroMain.querySelector(".home_hero_spark");
+  const content = heroMain.querySelector(".home_hero_content");
+  // Fallback: look for any element with a data-number attribute inside hero
+  const mediaOverlay =
+    heroMain.querySelector(".media_overlay") ||
+    heroMain.querySelector("[data-number]");
+
+  // Ensure initial states
+  if (background) gsap.set(background, { autoAlpha: 0 });
+  if (spark) gsap.set(spark, { scale: 5, transformOrigin: "50% 50%" });
+  if (content) gsap.set(content, { xPercent: 100, autoAlpha: 1 });
+  if (mediaOverlay && mediaOverlay.dataset)
+    mediaOverlay.setAttribute(
+      "data-number",
+      mediaOverlay.dataset.number || "0",
+    );
+
+  // Entry animation timeline
+  const entry = gsap.timeline({
+    defaults: { duration: 1, ease: "power3.out" },
+  });
+
+  entry.to(background || {}, { autoAlpha: 1 }, 0);
+  entry.to(spark || {}, { scale: 3, transformOrigin: "50% 50%" }, 0);
+  entry.to(content || {}, { xPercent: 0 }, 0.05);
+
+  // After entry completes, wire up scroll-triggered animations
+  entry.call(
+    () => {
+      // Build a scroll timeline that scrubs with scroll progress
+      // const endPoint = '+=200%';
+
+      const scrollTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: heroMain,
+          start: "top top",
+          end: () => `+=${window.innerHeight * 2}`,
+          scrub: true,
+          pin: true,
+          // pin: '.home_hero_group',
+          pinSpacing: true,
+          invalidateOnRefresh: true,
+          markers: true,
+          id: "main",
+          // update the data-number attribute as scroll progresses
+          onUpdate(self) {
+            const progress = Math.max(0, Math.min(1, self.progress || 0));
+            const value = Math.round(progress * 100);
+            if (mediaOverlay && mediaOverlay.setAttribute)
+              mediaOverlay.setAttribute("data-number", String(value));
+          },
+        },
+      });
+
+      // While scrolling: spark rotates slowly and scales down to 1 (from its current scale ~3)
+      if (spark)
+        scrollTl.to(
+          spark,
+          {
+            rotation: 360,
+            scale: 0.1,
+            transformOrigin: "50% 50%",
+            ease: "none",
+          },
+          0,
+        );
+
+      // Content moves from center to left (animate xPercent to -30%)
+      if (content)
+        scrollTl.to(content, { xPercent: -30, opacity: 0, ease: "none" }, 0);
+
+      // --- Additional animation: pin & stagger reveal for .home_hero_alt_wrap ---
+      const heroAlt = document.querySelector(".home_hero_alt_wrap");
+      if (heroAlt) {
+        // const altItems = heroAlt.querySelectorAll('.home_hero_alt_item');
+        const altItems = heroAlt.querySelectorAll(".home_hero_alt_item");
+        const totalAlt = altItems.length;
+        if (altItems && altItems.length) {
+          // initial states: invisible, blurred, and sized to fullscreen so each item occupies the full pinned area
+          altItems.forEach((el, idx) => {
+            // ensure stacking order so newly-entering items appear above previous ones
+            el.style.position = "absolute";
+            el.style.inset = "0";
+            el.style.width = "100%";
+            el.style.height = "100vh";
+            el.style.top = "0";
+            el.style.left = "0";
+            el.style.willChange = "transform, opacity, filter";
+            el.style.zIndex = idx + 1;
+          });
+
+          gsap.set(altItems, {
+            opacity: 0,
+            filter: "blur(40px)",
+            yPercent: 0,
+          });
+
+          // Extend the end by an extra viewport to ensure the last item has fully appeared
+          // and reserve spacing after the pin so the next sections scroll in normally.
+          const altTl = gsap.timeline({
+            scrollTrigger: {
+              trigger: heroAlt,
+              start: "top top",
+              end: () => `+=${(totalAlt + 2) * window.innerHeight}`,
+              scrub: true,
+              pin: true,
+              // pin: '.home_hero_group',
+              pinSpacing: true,
+              invalidateOnRefresh: true,
+              markers: true,
+              id: "alt",
+              onUpdate(self) {
+                const progress = Math.max(0, Math.min(1, self.progress || 0));
+                const segment = Math.min(
+                  totalAlt - 1,
+                  Math.floor(progress * totalAlt),
+                );
+                altItems.forEach((el, i) =>
+                  el.classList.toggle("is-active", i === segment),
+                );
+              },
+            },
+          });
+
+          // For each item schedule an "in" and an "out" so new items push previous ones up
+          // IMPORTANT: do NOT animate opacity to 0 on leave — instead push previous items fully up
+          // const lastIndex = totalAlt - 1;
+          altItems.forEach((item, i) => {
+            const inTime = i; // timeline time unit
+            const outTime = i + 0.6; // begin leaving shortly after
+
+            // Enter: fade in and unblur (new item appears on top)
+            altTl.to(
+              item,
+              {
+                opacity: 1,
+                filter: "blur(0px)",
+                yPercent: 0,
+                duration: 0.6,
+                ease: "power3.out",
+              },
+              inTime,
+            );
+
+            // Leave: push the old item fully up (no opacity fade) so it doesn't overlap the entering item
+            // if (i !== lastIndex) {
+              altTl.to(
+                item,
+                {
+                  yPercent: `${i * (-10)}`,
+                  filter: "blur(0px)",
+                  duration: 0.6,
+                  ease: "power3.in",
+                },
+                outTime,
+              );
+            // } else {
+            //   // keep the last item visible through the end
+            //   altTl.set(
+            //     item,
+            //     { yPercent: "0", opacity: 1, filter: "blur(0px)" },
+            //     outTime,
+            //   );
+            // }
+          });
+        }
+      }
+    },
+    null,
+    "+=0",
+  );
+}
+
+// Initialize on DOMContentLoaded
+document.addEventListener("DOMContentLoaded", initHeroAltAnimations);
+
+// Also attempt to init if scripts are parsed after DOMContentLoaded
+if (
+  document.readyState === "complete" ||
+  document.readyState === "interactive"
+) {
+  setTimeout(initHeroAltAnimations, 0);
+}
+</script>
+-->
+
+<script>
+// Hero entry + scroll animations
+function initHeroAltAnimations() {
+  const host = window.location.host;
+  const mainDomain = host.split('.')[1];
+  let DEBUG = mainDomain == 'webflow';
+
+  if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") {
+    // Wait for GSAP + ScrollTrigger to be available
+    console.warn("GSAP or ScrollTrigger not available yet. Retrying...");
+    setTimeout(initHeroAltAnimations, 100);
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  /** /
+  const heroMain = document.querySelector(".home_hero_wrap");
+  if (!heroMain) { 
+    return;
+  } else {
+    const heroImg = heroMain.querySelector('img');
+    const background = heroMain.querySelector(".background_overlay");
+    const spark = heroMain.querySelector(".home_hero_spark");
+    const content = heroMain.querySelector(".home_hero_content");
+    // Fallback: look for any element with a data-number attribute inside hero
+    const mediaOverlay = heroMain.querySelector(".media_overlay");
+    // Ensure initial states
+    if (background) gsap.set(background, { autoAlpha: 0 });
+    if (spark) gsap.set(spark, { scale: 5, transformOrigin: "50% 50%" });
+    if (content) gsap.set(content, { xPercent: 100, autoAlpha: 1 });
+    if (mediaOverlay && mediaOverlay.dataset)
+      mediaOverlay.setAttribute(
+        "data-number",
+        mediaOverlay.dataset.number || "0",
+      );
+
+    // Entry animation — runs once on load, independent of scroll.
+    const entry = gsap.timeline({ defaults: { duration: 1, ease: "power3.out" } });
+    entry.to(background || {}, { autoAlpha: 1 }, 0);
+    entry.to(spark || {}, { scale: 3, transformOrigin: "50% 50%" }, 0);
+    entry.to(content || {}, { xPercent: 0 }, 0.05);
+
+    // Hero scroll-scrubbed timeline — created IMMEDIATELY (not inside entry.call).
+    // Uses .fromTo() with the post-entry state as the "from" so the scrub
+    // picks up cleanly where the entry leaves off, even though it's created
+    // before the entry has visibly played.
+
+    if (heroImg.complete && heroImg.naturalWidth !== 0) {
+      // Image already loaded
+      heroTL();
+    } else {
+      // Wait for image to load
+      heroImg.addEventListener("load", heroTL, { once: true });
+    }
+
+    function heroTL() {
+      const scrollTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: heroMain,
+          start: "top top",
+          end: () => `+=${window.innerHeight * 2}`,
+          scrub: true,
+          pin: true,
+          pinSpacing: true,         // <-- was false; now reserves scroll distance so alt_wrap no longer overlaps
+          invalidateOnRefresh: true,
+          markers: DEBUG,
+          id: "main",
+          refreshPriority: 1,
+          onUpdate(self) {
+            const progress = Math.max(0, Math.min(1, self.progress || 0));
+            const value = Math.round(progress * 100);
+            if (mediaOverlay && mediaOverlay.setAttribute) mediaOverlay.setAttribute("data-number", String(value));
+          },
+        },
+      });
+      if (spark) {
+        scrollTl.fromTo(spark,
+          { scale: 3, rotation: 0 },
+          { scale: 0.1, rotation: 180, opacity: 0, transformOrigin: "50% 50%", ease: "none" },
+          0
+        );
+      }
+      if (content) {
+        scrollTl.fromTo(content,
+          { xPercent: 0, opacity: 1 },
+          { xPercent: -30, opacity: 0, ease: "none" },
+          0
+        );
+      }
+    }
+  }
+  /**/
+
+
+
+
+
+  // Alt stack — also created IMMEDIATELY, AFTER scrollTl so creation order matches DOM order.
+  // let ctxAlt = gsap.context(() => {
+    const heroAlt = document.querySelector(".home_hero_alt_wrap");
+    if (!heroAlt) {
+      return;
+    } else {
+      // const altItems = gsap.utils.toArray(".home_hero_alt_item");
+      const altItems = heroAlt.querySelectorAll(".home_hero_alt_item");
+      const totalAlt = altItems.length;
+      if (altItems && altItems.length) {
+        // altItems.forEach((el, idx) => {
+        //   el.style.position = "absolute";
+        //   el.style.inset = "0";
+        //   el.style.width = "100%";
+        //   el.style.height = "100vh";
+        //   el.style.top = "0";
+        //   el.style.left = "0";
+        //   el.style.willChange = "transform, opacity, filter";
+        //   el.style.zIndex = idx + 1;
+        // });
+
+        heroAlt.style.height = "100vh";
+        heroAlt.style.overflow = "hidden";   // clip absolute children to wrapper bounds
+        heroAlt.style.position = "relative"; // ensure absolute children are relative to wrapper
+
+        // // Initial state: only item 0 centered. Others parked below viewport.
+        // gsap.set(altItems, { yPercent: 100, opacity: 1, filter: "blur(0px)" });
+        // gsap.set(altItems[0], { yPercent: 0, opacity: 1, filter: "blur(0px)" });
+        
+        // AFTER (all items parked below, including item 0):
+        gsap.set(altItems, { yPercent: 100, opacity: 0, filter: "blur(40px)" });
+
+        const altTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: heroAlt,
+            start: "top top",
+            end: () => `+=${totalAlt * window.innerHeight}`, // <-- was (totalAlt + 2); now exactly one viewport per item
+            // end: () => `+=${window.innerHeight * 1}`,
+            scrub: true,
+            pin: true,
+            pinSpacing: true,
+            invalidateOnRefresh: true,
+            markers: DEBUG,
+            id: "alt",
+            refreshPriority: 1,
+            onUpdate(self) {
+              const progress = Math.max(0, Math.min(1, self.progress || 0));
+              const segment = Math.min(totalAlt - 1, Math.floor(progress * totalAlt));
+              altItems.forEach((el, i) => el.classList.toggle("is-active", i === segment));
+            },
+          },
+        });
+        // altTl.to('body',{ duration: 1 });
+
+        // Newsfeed stack-and-push (Mark confirmed this works):
+        const stackOffset = 18;
+        const fadePerStep = 0.35;
+        const blurPerStep = 8;
+        // Item 0 enters from below (same as every other item)
+        altTl.fromTo(altItems[0],
+          { yPercent: 100, opacity: 0, filter: "blur(40px)" },
+          { yPercent: 0, opacity: 1, filter: "blur(0px)", duration: 1, ease: "power3.out" },
+          0
+        );
+        
+        for (let step = 1; step < totalAlt; step++) {
+          for (let j = 0; j < step; j++) {
+            const distance = step - j;
+            altTl.to(altItems[j], {
+              yPercent: -stackOffset * distance,
+              opacity: Math.max(0, 1 - fadePerStep * distance),
+              filter: `blur(${blurPerStep * distance}px)`,
+              duration: 1,
+              ease: "power3.inOut",
+            }, step);
+          }
+          altTl.fromTo(altItems[step],
+            { yPercent: 100, opacity: 0, filter: "blur(40px)" },
+            { yPercent: 0, opacity: 1, filter: "blur(0px)", duration: 1, ease: "power3.out" },
+            step
+          );
+        }
+
+        // altTl.to('body',{ duration: 1 });
+      }
+    }
+  // });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.fonts.ready.then(() => {
+    // initHeroAnimations();   // creates hero (priority 1) + alt (priority 2)
+    initHeroAltAnimations();   // creates hero (priority 1) + alt (priority 2)
+    // initTextScroller();  // creates text scrollers (priority 3)
+    // One refresh after all triggers exist — recomputes start/end against final layout
+    requestAnimationFrame(() => ScrollTrigger.refresh());
+  });
+});
+
+</script>
