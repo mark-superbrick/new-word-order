@@ -4,7 +4,10 @@ function initHeroAltAnimations() {
   const mainDomain = host.split('.')[1];
   let DEBUG = mainDomain == 'webflow';
   // let DEBUG = false;
-  const ENABLE = true;  // <-- master toggle for hero scroll animations; set to false to disable all related code, including ScrollTrigger creation and entry animation
+  const ENABLE = true;
+  // Disable blur on tablet and smaller — Webflow tablet breakpoint is 991px.
+  const reduceBlur  = window.matchMedia('(max-width: 991px)').matches;
+  const blurMax     = reduceBlur ? 0 : 40;  // <-- master toggle for hero scroll animations; set to false to disable all related code, including ScrollTrigger creation and entry animation
 
 
   if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") {
@@ -51,7 +54,7 @@ function initHeroAltAnimations() {
       // gsap.set(altItems[0], { yPercent: 0, opacity: 1, filter: "blur(0px)" });
 
       // AFTER (all items parked below, including item 0):
-      gsap.set(altItems, { yPercent: 100, opacity: 0, filter: "blur(40px)" });
+      gsap.set(altItems, { yPercent: 100, opacity: 0, filter: `blur(${blurMax}px)` });
 
       // Dirty-check: skip classList writes when segment hasn't changed
       let lastAltSegment = -1;
@@ -82,10 +85,10 @@ function initHeroAltAnimations() {
       // Newsfeed stack-and-push (Mark confirmed this works):
       const stackOffset = 18;
       const fadePerStep = 0.35;
-      const blurPerStep = 8;
+      const blurPerStep = reduceBlur ? 0 : 8;
       // Item 0 enters from below (same as every other item)
       altTl.fromTo(altItems[0],
-        { yPercent: 100, opacity: 0, filter: "blur(40px)" },
+        { yPercent: 100, opacity: 0, filter: `blur(${blurMax}px)` },
         { yPercent: 0, opacity: 1, filter: "blur(0px)", duration: 1, ease: "power3.out" },
         0
       );
@@ -102,7 +105,7 @@ function initHeroAltAnimations() {
           }, step);
         }
         altTl.fromTo(altItems[step],
-          { yPercent: 100, opacity: 0, filter: "blur(40px)" },
+          { yPercent: 100, opacity: 0, filter: `blur(${blurMax}px)` },
           { yPercent: 0, opacity: 1, filter: "blur(0px)", duration: 1, ease: "power3.out" },
           step
         );

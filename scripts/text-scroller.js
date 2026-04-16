@@ -4,7 +4,11 @@ function initTextScroller() {
   const mainDomain = host.split('.')[1];
   let DEBUG = mainDomain == 'webflow';
   // let DEBUG = false;
-  const ENABLE = true;  // <-- master toggle for hero scroll animations; set to false to disable all related code, including ScrollTrigger creation and entry animation
+  const ENABLE = true;
+  // Disable blur on tablet and smaller — blur is expensive to paint and visually distracting
+  // at smaller sizes. Webflow tablet breakpoint is 991px.
+  const reduceBlur = window.matchMedia('(max-width: 991px)').matches;
+  const blurFull   = reduceBlur ? 'blur(0px)' : 'blur(40px)';  // <-- master toggle for hero scroll animations; set to false to disable all related code, including ScrollTrigger creation and entry animation
 
 
   gsap.registerPlugin(ScrollTrigger);
@@ -43,7 +47,7 @@ function initTextScroller() {
     });
 
     // Set initial states: offscreen below and invisible for all except first
-    gsap.set(items, { yPercent: 100, opacity: 0, filter: 'blur(40px)', overwrite: true });
+    gsap.set(items, { yPercent: 100, opacity: 0, filter: blurFull, overwrite: true });
 
     // Compute total scroll distance: one viewport per slide.
     // Add an extra viewport's worth of scroll so the section remains pinned
@@ -120,7 +124,7 @@ function initTextScroller() {
 
       // Skip leave animation for last item (no "out" tween)
       if (i !== lastIndex) {
-        tl.to(item, { yPercent: -20, opacity: 0, filter: 'blur(40px)', duration: 0.6, ease: 'power3.in' }, outTime);
+        tl.to(item, { yPercent: -20, opacity: 0, filter: blurFull, duration: 0.6, ease: 'power3.in' }, outTime);
       } else {
         // ensure the last item remains visible through the end of its segment
         tl.set(item, { yPercent: 0, opacity: 1, filter: 'blur(0px)' }, outTime);
