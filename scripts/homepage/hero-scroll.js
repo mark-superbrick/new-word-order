@@ -2,7 +2,8 @@
 function initHeroAnimations() {
   const host = window.location.host;
   const mainDomain = host.split('.')[1];
-  let DEBUG = mainDomain == 'webflow';
+  let DEBUG = mainDomain !== 'webflow';
+  // let DEBUG = false;
 
   if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") {
     // Wait for GSAP + ScrollTrigger to be available
@@ -55,6 +56,8 @@ function initHeroAnimations() {
 
       function heroTL() {
         const totalScroll = window.innerHeight * 2;
+        // Dirty-check: avoid setAttribute DOM write when value hasn't changed
+        let lastValue = -1;
         const scrollTl = gsap.timeline({
           scrollTrigger: {
             trigger: heroMain,
@@ -71,6 +74,8 @@ function initHeroAnimations() {
             onUpdate(self) {
               const progress = Math.max(0, Math.min(1, self.progress || 0));
               const value = Math.round(progress * 100);
+              if (value === lastValue) return;
+              lastValue = value;
               if (mediaOverlay && mediaOverlay.setAttribute) mediaOverlay.setAttribute("data-number", String(value));
             },
           },
@@ -89,7 +94,7 @@ function initHeroAnimations() {
             0
           );
         }
-        ScrollTrigger.refresh();
+        // Refresh handled by the outer requestAnimationFrame in DOMContentLoaded
       }
     // });
   }

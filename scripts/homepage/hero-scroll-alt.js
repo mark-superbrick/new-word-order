@@ -3,6 +3,7 @@ function initHeroAltAnimations() {
   const host = window.location.host;
   const mainDomain = host.split('.')[1];
   let DEBUG = mainDomain == 'webflow';
+  // let DEBUG = false;
 
   if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") {
     // Wait for GSAP + ScrollTrigger to be available
@@ -45,6 +46,8 @@ function initHeroAltAnimations() {
         // AFTER (all items parked below, including item 0):
         gsap.set(altItems, { yPercent: 100, opacity: 0, filter: "blur(40px)" });
 
+        // Dirty-check: skip classList writes when segment hasn't changed
+        let lastAltSegment = -1;
         const altTl = gsap.timeline({
           scrollTrigger: {
             trigger: heroAlt,
@@ -61,6 +64,8 @@ function initHeroAltAnimations() {
             onUpdate(self) {
               const progress = Math.max(0, Math.min(1, self.progress || 0));
               const segment = Math.min(totalAlt - 1, Math.floor(progress * totalAlt));
+              if (segment === lastAltSegment) return;
+              lastAltSegment = segment;
               altItems.forEach((el, i) => el.classList.toggle("is-active", i === segment));
             },
           },

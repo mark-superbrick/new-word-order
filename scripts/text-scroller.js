@@ -3,6 +3,7 @@ function initTextScroller() {
   const host = window.location.host;
   const mainDomain = host.split('.')[1];
   let DEBUG = mainDomain == 'webflow';
+  // let DEBUG = false;
 
   gsap.registerPlugin(ScrollTrigger);
   
@@ -32,17 +33,20 @@ function initTextScroller() {
       el.style.height = "100svh";
       el.style.opacity = 0;
       el.style.zIndex = idx + 1;
-      // Ensure hardware acceleration and that filter will be animatable
-      el.style.willChange = 'transform, opacity, filter';
+      // will-change set only on items that will actually animate (not item 0 which starts visible)
+      if (idx !== 0) el.style.willChange = 'transform, opacity, filter';
     });
 
     // Set initial states: offscreen below and invisible for all except first
-    gsap.set(items, { y: '100%', opacity: 0, filter: 'blur(40px)', overwrite: true });
+    gsap.set(items, { yPercent: 100, opacity: 0, filter: 'blur(40px)', overwrite: true });
 
     // Compute total scroll distance: one viewport per slide.
     // Add an extra viewport's worth of scroll so the section remains pinned
     // until the very last item finishes its exit animation and leaves with the section.
     const totalScroll = (items.length + 1) * window.innerHeight;
+
+    // Dirty-check: skip classList writes when segment hasn't changed
+    let lastSegment = -1;
 
     // Build a timeline where each slide animates in (from bottom) and then out (fade up)
     const tl = gsap.timeline({
@@ -64,6 +68,8 @@ function initTextScroller() {
           // Set an "is-active" class for the currently scrolled segment
           const progress = self.progress || 0;
           const segment = Math.min(items.length - 1, Math.floor(progress * items.length));
+          if (segment === lastSegment) return;
+          lastSegment = segment;
           items.forEach((el, i) => el.classList.toggle('is-active', i === segment));
         }
       }
@@ -90,7 +96,7 @@ function initTextScroller() {
     */
     /**/
     // First item should NOT have an enter effect: make it visible immediately
-    gsap.set(items[0], { y: '0%', opacity: 1, filter: 'blur(0px)', overwrite: true });
+    gsap.set(items[0], { yPercent: 0, opacity: 1, filter: 'blur(0px)', overwrite: true });
     // Ensure first item is considered active at start
     // if (items[0].classList) items[0].classList.add('is-active');
     // For each item, schedule an "in" tween at its index and an "out" tween shortly after
@@ -101,26 +107,28 @@ function initTextScroller() {
 
       // Skip enter animation for first item (no "in" tween)
       if (i !== 0) {
-        tl.to(item, { y: '0%', opacity: 1, filter: 'blur(0px)', duration: 0.6, ease: 'power3.out' }, inTime);
+        tl.to(item, { yPercent: 0, opacity: 1, filter: 'blur(0px)', duration: 0.6, ease: 'power3.out' }, inTime);
       } else {
         // make sure timeline keeps the first item visible at this point
-        tl.set(item, { y: '0%', opacity: 1, filter: 'blur(0px)', }, inTime);
+        tl.set(item, { yPercent: 0, opacity: 1, filter: 'blur(0px)' }, inTime);
       }
 
       // Skip leave animation for last item (no "out" tween)
       if (i !== lastIndex) {
-        tl.to(item, { y: '-20%', opacity: 0, filter: 'blur(40px)', duration: 0.6, ease: 'power3.in' }, outTime);
+        tl.to(item, { yPercent: -20, opacity: 0, filter: 'blur(40px)', duration: 0.6, ease: 'power3.in' }, outTime);
       } else {
         // ensure the last item remains visible through the end of its segment
-        tl.set(item, { y: '0%', opacity: 1, filter: 'blur(0px)', }, outTime);
+        tl.set(item, { yPercent: 0, opacity: 1, filter: 'blur(0px)' }, outTime);
       }
     });
     /**/
   });
-  
-  // Ensure ScrollTrigger recalculates on resize
+
+  // Debounced resize — ScrollTrigger.refresh() is expensive; don't fire on every pixel
+  let resizeTimer;
   window.addEventListener('resize', () => {
-    ScrollTrigger.refresh();
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => ScrollTrigger.refresh(), 250);
   });
 }
 
