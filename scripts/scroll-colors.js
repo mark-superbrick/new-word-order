@@ -5,8 +5,6 @@ function initScrollColors() {
   let DEBUG = mainDomain == 'webflow';
   // let DEBUG = false;
 
-  gsap.registerPlugin(ScrollTrigger);
-
   // Ensure GSAP + ScrollTrigger are available before proceeding.
   if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
     // Retry shortly if scripts haven't loaded yet.
@@ -65,35 +63,30 @@ function initScrollColors() {
     const prevTextColor = prevSection ? resolveColor(prevSection.dataset.textColor) : null;
 
     if (index === 0) {
-      const initialProps = {};
-      if (bgColor)   initialProps.backgroundColor = bgColor;
-      if (textColor) initialProps.color = textColor;
-      if (Object.keys(initialProps).length > 0) {
-        gsap.set(mainWrapper, initialProps);
-      }
+      if (bgColor)   gsap.set(mainWrapper, { backgroundColor: bgColor });
+      if (textColor) gsap.set(mainWrapper, { color: textColor });
     }
+
+    // Pre-build tween vars at setup time — avoids object allocation inside scroll callbacks.
+    // overwrite: 'auto' kills any in-flight tween on the same properties so fast scrolling
+    // through multiple sections never leaves competing tweens fighting over the same target.
+    const enterVars    = { duration: 0.6, overwrite: 'auto' };
+    const leaveBackVars = { duration: 0.6, overwrite: 'auto' };
+    if (bgColor)      enterVars.backgroundColor    = bgColor;
+    if (textColor)    enterVars.color               = textColor;
+    if (prevBgColor)  leaveBackVars.backgroundColor = prevBgColor;
+    if (prevTextColor) leaveBackVars.color          = prevTextColor;
+
+    const hasEnter    = !!(bgColor || textColor);
+    const hasLeaveBack = !!(prevBgColor || prevTextColor);
 
     ScrollTrigger.create({
       trigger: section,
       start: 'top 50%',
       markers: DEBUG,
       id: 'color-' + index,
-      onEnter: function() {
-        const props = {};
-        if (bgColor)   props.backgroundColor = bgColor;
-        if (textColor) props.color = textColor;
-        if (Object.keys(props).length > 0) {
-          gsap.to(mainWrapper, { duration: 0.6, ...props });
-        }
-      },
-      onLeaveBack: function() {
-        const props = {};
-        if (prevBgColor)   props.backgroundColor = prevBgColor;
-        if (prevTextColor) props.color = prevTextColor;
-        if (Object.keys(props).length > 0) {
-          gsap.to(mainWrapper, { duration: 0.6, ...props });
-        }
-      },
+      onEnter()     { if (hasEnter)     gsap.to(mainWrapper, enterVars); },
+      onLeaveBack() { if (hasLeaveBack) gsap.to(mainWrapper, leaveBackVars); },
     });
   });
 }
