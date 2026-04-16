@@ -34,7 +34,10 @@ function initTextScroller() {
       el.style.opacity = 0;
       el.style.zIndex = idx + 1;
       // will-change set only on items that will actually animate (not item 0 which starts visible)
-      if (idx !== 0) el.style.willChange = 'transform, opacity, filter';
+      if (idx !== 0) {
+        // el.style.willChange = 'transform, opacity, filter';
+        el.style.transform = "translateZ(0)";
+      }
     });
 
     // Set initial states: offscreen below and invisible for all except first

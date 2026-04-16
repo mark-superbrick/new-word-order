@@ -22,6 +22,29 @@ function initScrollColors() {
     return;
   }
 
+  // Animate background-color on a dedicated child layer instead of mainWrapper directly.
+  // Strategy: read mainWrapper's current background, clear it to transparent, then paint
+  // on an absolutely-positioned child. The child is bounded to mainWrapper's area so its
+  // repaint rect never reaches the scrollbar track.
+  const existingBg = getComputedStyle(mainWrapper).backgroundColor;
+  mainWrapper.style.backgroundColor = 'transparent';
+  if (getComputedStyle(mainWrapper).position === 'static') {
+    mainWrapper.style.position = 'relative';
+  }
+  const bgLayer = document.createElement('div');
+  // bgLayer.style.cssText = `position:absolute;inset:0;pointer-events:none;will-change:background-color,text-color;background-color:${existingBg};`;
+  bgLayer.style.position = "absolute";
+  bgLayer.style.inset = 0;
+  bgLayer.style.zIndex = 0;
+  bgLayer.style.pointerEvents = "none";
+  bgLayer.style.transform = "translateZ(0)"; // promote to its own layer for smoother color transitions
+  // bgLayer.style.willChange = "background-color, color";
+  bgLayer.style.backgroundColor = `${existingBg}`;
+  mainWrapper.prepend(bgLayer);
+
+  // Reduce unnecessary ScrollTrigger callback firings.
+  ScrollTrigger.config({ limitCallbacks: true });
+
   const rootStyles  = getComputedStyle(document.documentElement);
 
   const colorMap = {
@@ -63,30 +86,31 @@ function initScrollColors() {
     const prevTextColor = prevSection ? resolveColor(prevSection.dataset.textColor) : null;
 
     if (index === 0) {
-      if (bgColor)   gsap.set(mainWrapper, { backgroundColor: bgColor });
+      if (bgColor)   gsap.set(bgLayer,     { backgroundColor: bgColor });
       if (textColor) gsap.set(mainWrapper, { color: textColor });
     }
 
     // Pre-build tween vars at setup time — avoids object allocation inside scroll callbacks.
-    // overwrite: 'auto' kills any in-flight tween on the same properties so fast scrolling
-    // through multiple sections never leaves competing tweens fighting over the same target.
-    const enterVars    = { duration: 0.6, overwrite: 'auto' };
-    const leaveBackVars = { duration: 0.6, overwrite: 'auto' };
-    if (bgColor)      enterVars.backgroundColor    = bgColor;
-    if (textColor)    enterVars.color               = textColor;
-    if (prevBgColor)  leaveBackVars.backgroundColor = prevBgColor;
-    if (prevTextColor) leaveBackVars.color          = prevTextColor;
-
-    const hasEnter    = !!(bgColor || textColor);
-    const hasLeaveBack = !!(prevBgColor || prevTextColor);
+    // backgroundColor goes to bgLayer (fixed overlay); color goes to mainWrapper (text).
+    // overwrite: 'auto' kills any in-flight tween on the same property before starting the new one.
+    const enterBgVars    = bgColor      ? { duration: 0.6, overwrite: 'auto', backgroundColor: bgColor }      : null;
+    const enterTextVars  = textColor    ? { duration: 0.6, overwrite: 'auto', color: textColor }               : null;
+    const leaveBgVars    = prevBgColor  ? { duration: 0.6, overwrite: 'auto', backgroundColor: prevBgColor }  : null;
+    const leaveTextVars  = prevTextColor ? { duration: 0.6, overwrite: 'auto', color: prevTextColor }          : null;
 
     ScrollTrigger.create({
       trigger: section,
       start: 'top 50%',
       markers: DEBUG,
       id: 'color-' + index,
-      onEnter()     { if (hasEnter)     gsap.to(mainWrapper, enterVars); },
-      onLeaveBack() { if (hasLeaveBack) gsap.to(mainWrapper, leaveBackVars); },
+      onEnter() {
+        if (enterBgVars)   gsap.to(bgLayer,     enterBgVars);
+        if (enterTextVars) gsap.to(mainWrapper, enterTextVars);
+      },
+      onLeaveBack() {
+        if (leaveBgVars)   gsap.to(bgLayer,     leaveBgVars);
+        if (leaveTextVars) gsap.to(mainWrapper, leaveTextVars);
+      },
     });
   });
 }

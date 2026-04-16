@@ -24,6 +24,13 @@ function initHeroAnimations() {
     const content = heroMain.querySelector(".home_hero_content");
     // Fallback: look for any element with a data-number attribute inside hero
     const mediaOverlay = heroMain.querySelector(".media_overlay");
+  // Promote scrubbed elements to compositor layers before animation starts —
+  // without this, every scroll tick forces a repaint of the entire home_hero_wrap.
+  // if (spark) spark.style.willChange = 'transform, opacity';
+  if (spark) spark.style.transform = 'translateZ(0)';
+  // if (content) content.style.willChange = 'transform, opacity';
+  if (content) content.style.transform = 'translateZ(0)';
+
     // Ensure initial states
     if (background) gsap.set(background, { autoAlpha: 0 });
     if (spark) gsap.set(spark, { scale: 5, transformOrigin: "50% 50%" });

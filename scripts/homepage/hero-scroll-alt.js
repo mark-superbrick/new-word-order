@@ -39,6 +39,11 @@ function initHeroAltAnimations() {
         heroAlt.style.overflow = "hidden";   // clip absolute children to wrapper bounds
         heroAlt.style.position = "relative"; // ensure absolute children are relative to wrapper
 
+      // Promote all items to compositor layers before animation starts — all items receive
+      // transform, opacity, and filter tweens during the stack effect, so without this the
+      // browser must repaint the parent heroAlt on every scroll tick.
+      altItems.forEach(el => { el.style.willChange = 'transform, opacity, filter'; });
+
         // // Initial state: only item 0 centered. Others parked below viewport.
         // gsap.set(altItems, { yPercent: 100, opacity: 1, filter: "blur(0px)" });
         // gsap.set(altItems[0], { yPercent: 0, opacity: 1, filter: "blur(0px)" });
