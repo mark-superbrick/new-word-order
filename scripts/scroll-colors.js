@@ -55,6 +55,8 @@ function initScrollColors() {
     'orange':    '--base-color--orange',
     'blue':      '--base-color--blue',
     'lime':      '--base-color--lime',
+    'violet':    '--base-color--violet',
+    'cobalt':    '--base-color--cobalt',
   };
 
   function resolveColor(value) {
