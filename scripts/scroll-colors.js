@@ -19,7 +19,6 @@ function initScrollColors() {
   // Prefer explicit #main if present, otherwise fall back to common wrappers.
   const mainWrapper = document.getElementById('main') || document.querySelector('main') || document.querySelector('.main-wrapper') || document.querySelector('.page-wrapper') || document.body;
   if (!mainWrapper || !ENABLE) {
-    console.warn('initScrollColors: no main wrapper found — aborting color-sync.');
     return;
   }
 

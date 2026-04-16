@@ -1,0 +1,13 @@
+
+/* Optional: Rotating arrow left/right based on Scroll Direction */
+
+.marquee__advanced__arrow-svg,
+[data-marquee-direction="right"][data-marquee-status="inverted"] .marquee__advanced__arrow-svg {
+  transition: 0.5s cubic-bezier(0.625, 0.05, 0, 1);
+  transform: rotate(-180deg);
+}
+
+[data-marquee-status="inverted"] .marquee__advanced__arrow-svg,
+[data-marquee-direction="right"][data-marquee-status="normal"] .marquee__advanced__arrow-svg {
+  transform: rotate(-359.999deg);
+}
