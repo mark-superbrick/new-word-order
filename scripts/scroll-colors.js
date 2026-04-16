@@ -4,6 +4,8 @@ function initScrollColors() {
   const mainDomain = host.split('.')[1];
   let DEBUG = mainDomain == 'webflow';
   // let DEBUG = false;
+  const ENABLE = true;  // <-- master toggle for hero scroll animations; set to false to disable all related code, including ScrollTrigger creation and entry animation
+
 
   // Ensure GSAP + ScrollTrigger are available before proceeding.
   if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
@@ -16,8 +18,7 @@ function initScrollColors() {
 
   // Prefer explicit #main if present, otherwise fall back to common wrappers.
   const mainWrapper = document.getElementById('main') || document.querySelector('main') || document.querySelector('.main-wrapper') || document.querySelector('.page-wrapper') || document.body;
-  if (!mainWrapper) {
-    // Defensive: if there's truly nothing to animate, bail out to avoid "GSAP target null not found".
+  if (!mainWrapper || !ENABLE) {
     console.warn('initScrollColors: no main wrapper found — aborting color-sync.');
     return;
   }

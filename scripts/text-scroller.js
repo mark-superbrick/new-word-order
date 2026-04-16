@@ -4,11 +4,13 @@ function initTextScroller() {
   const mainDomain = host.split('.')[1];
   let DEBUG = mainDomain == 'webflow';
   // let DEBUG = false;
+  const ENABLE = true;  // <-- master toggle for hero scroll animations; set to false to disable all related code, including ScrollTrigger creation and entry animation
+
 
   gsap.registerPlugin(ScrollTrigger);
   
   const wrappers = document.querySelectorAll('[data-text-scroller-wrap]');
-  if (!wrappers || wrappers.length === 0) return;
+  if (!wrappers || wrappers.length === 0 || !ENABLE) return;
 
   wrappers.forEach((wrapper, index) => {
     const items = wrapper.querySelectorAll('[data-text-scroller-item]');
