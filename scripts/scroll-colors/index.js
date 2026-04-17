@@ -59,7 +59,7 @@ function initScrollColors() {
   };
 
   function resolveColor(value) {
-    if (!value) return null;
+    if (!value || !value.trim()) return null;
     const key = value.trim().toLowerCase();
 
     // Friendly name → CSS variable name → computed value
