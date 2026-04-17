@@ -56,12 +56,13 @@ function initTextScroller() {
 
     // Dirty-check: skip classList writes when segment hasn't changed
     let lastSegment = -1;
+    const isOnlyItem = items.length === 1;
 
     // Build a timeline where each slide animates in (from bottom) and then out (fade up)
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: wrapper,
-        start: 'top top',
+        start: 'center center',
         end: () => `+=${totalScroll}`,
         scrub: true,
         // Pin the wrapper for the full timeline so the section stays fixed
@@ -105,7 +106,10 @@ function initTextScroller() {
     */
     /**/
     // First item should NOT have an enter effect: make it visible immediately
-    gsap.set(items[0], { yPercent: 0, opacity: 1, filter: 'blur(0px)', overwrite: true });
+    // Skip when it's the only item — it should animate in like any other item
+    if (items.length > 1) {
+      gsap.set(items[0], { yPercent: 0, opacity: 1, filter: 'blur(0px)', overwrite: true });
+    }
     // Ensure first item is considered active at start
     // if (items[0].classList) items[0].classList.add('is-active');
     // For each item, schedule an "in" tween at its index and an "out" tween shortly after
@@ -114,15 +118,16 @@ function initTextScroller() {
       const inTime = i; // start time in timeline units
       const outTime = i + 0.6; // when to start fading out
 
-      // Skip enter animation for first item (no "in" tween)
-      if (i !== 0) {
+
+      // Skip enter animation for first item (no "in" tween), unless it's also the only item
+      if (i !== 0 || isOnlyItem) {
         tl.to(item, { yPercent: 0, opacity: 1, filter: 'blur(0px)', duration: 0.6, ease: 'power3.out' }, inTime);
       } else {
         // make sure timeline keeps the first item visible at this point
         tl.set(item, { yPercent: 0, opacity: 1, filter: 'blur(0px)' }, inTime);
       }
 
-      // Skip leave animation for last item (no "out" tween)
+      // Skip leave animation for last item (no "out" tween), unless it's also the only item
       if (i !== lastIndex) {
         tl.to(item, { yPercent: -20, opacity: 0, filter: blurFull, duration: 0.6, ease: 'power3.in' }, outTime);
       } else {
