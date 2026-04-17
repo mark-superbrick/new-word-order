@@ -2,8 +2,8 @@
 function initHeroAltAnimations() {
   const host = window.location.host;
   const mainDomain = host.split('.')[1];
-  let DEBUG = mainDomain == 'webflow';
-  // let DEBUG = false;
+  // let DEBUG = mainDomain == 'webflow';
+  let DEBUG = false;
   const ENABLE = true;
   // Disable blur on tablet and smaller — Webflow tablet breakpoint is 991px.
   const reduceBlur  = window.matchMedia('(max-width: 991px)').matches;

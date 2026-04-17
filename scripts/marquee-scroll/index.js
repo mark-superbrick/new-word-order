@@ -2,8 +2,8 @@
 function initMarqueeScrollDirection() {
   const host = window.location.host;
   const mainDomain = host.split('.')[1];
-  let DEBUG = mainDomain == 'webflow';
-  // let DEBUG = false;
+  // let DEBUG = mainDomain == 'webflow';
+  let DEBUG = false;
   const ENABLE = true;  // <-- master toggle for hero scroll animations; set to false to disable all related code, including ScrollTrigger creation and entry animation
 
   const marquees = document.querySelectorAll('[data-marquee-scroll-direction-target]');

@@ -2,8 +2,8 @@
 function initTextScroller() {
   const host = window.location.host;
   const mainDomain = host.split('.')[1];
-  let DEBUG = mainDomain == 'webflow';
-  // let DEBUG = false;
+  // let DEBUG = mainDomain == 'webflow';
+  let DEBUG = false;
   const ENABLE = true;
   // Disable blur on tablet and smaller — blur is expensive to paint and visually distracting
   // at smaller sizes. Webflow tablet breakpoint is 991px.
