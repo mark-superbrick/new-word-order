@@ -62,7 +62,7 @@ function initTextScroller() {
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: wrapper,
-        start: 'center center',
+        start: 'bottom bottom',
         end: () => `+=${totalScroll}`,
         scrub: true,
         // Pin the wrapper for the full timeline so the section stays fixed
