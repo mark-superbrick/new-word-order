@@ -119,10 +119,6 @@ function initHeroAltAnimations() {
 
 document.addEventListener("DOMContentLoaded", () => {
   document.fonts.ready.then(() => {
-    // initHeroAnimations();   // creates hero (priority 1) + alt (priority 2)
-    initHeroAltAnimations();   // creates hero (priority 1) + alt (priority 2)
-    // initTextScroller();  // creates text scrollers (priority 3)
-    // One refresh after all triggers exist — recomputes start/end against final layout
-    requestAnimationFrame(() => ScrollTrigger.refresh());
+    initHeroAltAnimations();   
   });
 });

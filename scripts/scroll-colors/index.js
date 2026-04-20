@@ -34,16 +34,13 @@ function initScrollColors() {
   const bgLayer = document.createElement('div');
   // bgLayer.style.cssText = `position:absolute;inset:0;pointer-events:none;will-change:background-color,text-color;background-color:${existingBg};`;
   bgLayer.style.position = "absolute";
-  bgLayer.style.inset = 0;
+  bgLayer.style.inset = "0px";
   bgLayer.style.zIndex = 0;
   bgLayer.style.pointerEvents = "none";
   bgLayer.style.transform = "translateZ(0)"; // promote to its own layer for smoother color transitions
   // bgLayer.style.willChange = "background-color, color";
   bgLayer.style.backgroundColor = `${existingBg}`;
   mainWrapper.prepend(bgLayer);
-
-  // Reduce unnecessary ScrollTrigger callback firings.
-  ScrollTrigger.config({ limitCallbacks: true });
 
   const rootStyles  = getComputedStyle(document.documentElement);
 
@@ -115,6 +112,25 @@ function initScrollColors() {
       },
     });
   });
+
+  // On reload mid-page, ScrollTrigger won't fire onEnter for sections already
+  // scrolled past. Find the last section whose trigger point is above the
+  // current scroll position and apply its colors immediately.
+  ScrollTrigger.refresh();
+  const scrollY = window.scrollY;
+  let activeBgColor   = null;
+  let activeTextColor = null;
+  sections.forEach((section) => {
+    const triggerY = section.getBoundingClientRect().top + scrollY - window.innerHeight * 0.5;
+    if (scrollY >= triggerY) {
+      const bg   = resolveColor(section.dataset.bgColor);
+      const text = resolveColor(section.dataset.textColor);
+      if (bg)   activeBgColor   = bg;
+      if (text) activeTextColor = text;
+    }
+  });
+  if (activeBgColor)   gsap.set(bgLayer,     { backgroundColor: activeBgColor });
+  if (activeTextColor) gsap.set(mainWrapper, { color: activeTextColor });
 }
 
 
@@ -122,6 +138,5 @@ function initScrollColors() {
 document.addEventListener("DOMContentLoaded", () => {
   document.fonts.ready.then(() => {
     initScrollColors();
-    requestAnimationFrame(() => ScrollTrigger.refresh());
   });
 });
