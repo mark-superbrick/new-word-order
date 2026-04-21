@@ -19,8 +19,19 @@
     }, 50);
   }
 
+  // Module-level instances array so window listeners always reference the current set.
+  // Cleared on each re-init so stale tweens from previous pages don't keep running.
+  var instances = [];
+
   function initRotateScrollDirection(container) {
-    const instances = [];
+    // Kill tweens, ScrollTriggers, disconnect observers, and clear previous instances before re-init
+    instances.forEach(function(inst) {
+      if (inst.tween) inst.tween.kill();
+      if (inst._st) inst._st.kill();
+      if (inst._io) inst._io.disconnect();
+      clearTimeout(inst.decayTimer);
+    });
+    instances.length = 0;
 
     whenGsapReady(function(){
       var gsap = window.gsap;
@@ -34,8 +45,12 @@
 
       // Find all rotate collections and create a continuous rotation tween for each.
       collections.forEach((collection) => {
-        // scrollTarget is expected to be an ancestor with data-rotate-scroll-target
-        const scrollTarget = collection.closest('[data-rotate-scroll-target]') || collection;
+        // scrollTarget is expected to be an ancestor with data-rotate-scroll-target.
+        // If that ancestor is inside a ScrollTrigger pin (position:fixed), climb to its
+        // pin-spacer instead — pin-spacer has correct document offsets for trigger math.
+        let scrollTarget = collection.closest('[data-rotate-scroll-target]') || collection;
+        const pinSpacer = scrollTarget.closest('.pin-spacer');
+        if (pinSpacer) scrollTarget = pinSpacer;
 
         // directionTarget can be used to store config attributes if present
         const directionTarget = collection.closest('[data-rotate-scroll-direction-target]') || scrollTarget || collection;
@@ -101,17 +116,14 @@
 
         // Use ScrollTrigger to flip direction while the section is in the viewport based on scroll direction
         try {
-          ScrollTrigger.create({
+          instance._st = ScrollTrigger.create({
             trigger: scrollTarget || collection,
             start: 'top bottom',
             end: 'bottom top',
             refreshPriority: 1,
             onUpdate(self) {
-              if (!instance.isVisible) return;
-              const desiredSign = self.direction === 1 ? 1 : -1; // 1 => scrolling down, -1 => scrolling up
-              // remember the most recent direction so we can return to it when scrolling stops
+              const desiredSign = self.direction === 1 ? 1 : -1;
               instance.lastSign = desiredSign;
-              // preserve current magnitude, just change sign smoothly
               const curMag = Math.max(Math.abs(instance.tween.timeScale() || 1), 0.001);
               gsap.to(instance.tween, { timeScale: desiredSign * curMag, duration: 0.45, ease: 'power3.out' });
             }
@@ -122,111 +134,81 @@
 
         instances.push(instance);
       });
-
-      // Helper to apply an instantaneous acceleration to visible instances
-      function applyAcceleration(desiredSign, magnitude, immediateDuration, decayDelay) {
-        immediateDuration = immediateDuration || 0.12;
-        decayDelay = decayDelay || 250;
-        if (!instances.length) return;
-        instances.forEach(function(instance) {
-          if (!instance.isVisible) return;
-          instance.lastSign = desiredSign;
-          const targetMag = 1 + magnitude;
-          gsap.to(instance.tween, { timeScale: desiredSign * targetMag, duration: immediateDuration, ease: 'power2.out' });
-          clearTimeout(instance.decayTimer);
-          instance.decayTimer = setTimeout(function() {
-            if (!instance.isVisible) return;
-            const keepSign = instance.lastSign || instance.baseSign;
-            gsap.to(instance.tween, { timeScale: keepSign * 1, duration: 1.2, ease: 'power3.out' });
-          }, decayDelay);
-        });
-      }
-
-      window.addEventListener('wheel', function(ev) {
-        if (!instances.length) return;
-        const delta = ev.deltaY || 0;
-        if (!delta) return;
-        const scrollDir = delta > 0 ? 1 : -1;
-        const amp = Math.min(Math.abs(delta) / 120, 6);
-        applyAcceleration(scrollDir, amp, 0.12, 250);
-      }, { passive: true });
-
-      let lastTouchY = null;
-      let lastTouchTime = null;
-
-      window.addEventListener('touchstart', function(ev) {
-        const t = ev.touches && ev.touches[0];
-        if (!t) return;
-        lastTouchY = t.clientY;
-        lastTouchTime = performance.now();
-      }, { passive: true });
-
-      window.addEventListener('touchmove', function(ev) {
-        const t = ev.touches && ev.touches[0];
-        if (!t || lastTouchY === null) return;
-        const now = performance.now();
-        const dy = t.clientY - lastTouchY;
-        const dt = Math.max(1, now - lastTouchTime);
-        const velocity = dy / dt;
-        lastTouchY = t.clientY;
-        lastTouchTime = now;
-        const amp = Math.min(Math.abs(velocity) * 18, 8);
-        if (amp < 0.02) return;
-        applyAcceleration(velocity > 0 ? 1 : -1, amp, 0.12, 300);
-      }, { passive: true });
-
-      window.addEventListener('touchend', function() {
-        lastTouchY = null;
-      }, { passive: true });
-
-      let scrollStopTimer;
-      window.addEventListener('scroll', function() {
-        clearTimeout(scrollStopTimer);
-        scrollStopTimer = setTimeout(function() {
-          instances.forEach(function(instance) {
-            if (!instance.isVisible) return;
-            const keepSign = instance.lastSign || instance.baseSign;
-            gsap.to(instance.tween, { timeScale: keepSign * 1, duration: 0.9, ease: 'power3.out' });
-          });
-        }, 350);
-      }, { passive: true });
     });
   }
+
+  // Window listeners registered once at module level — reference module-scoped `instances`
+  // so they always act on the current page's set without re-registration on navigation.
+  function applyAcceleration(desiredSign, magnitude, immediateDuration, decayDelay) {
+    if (!window.gsap || !instances.length) return;
+    immediateDuration = immediateDuration || 0.12;
+    decayDelay = decayDelay || 250;
+    instances.forEach(function(instance) {
+      if (!instance.isVisible) return;
+      instance.lastSign = desiredSign;
+      const targetMag = 1 + magnitude;
+      window.gsap.to(instance.tween, { timeScale: desiredSign * targetMag, duration: immediateDuration, ease: 'power2.out' });
+      clearTimeout(instance.decayTimer);
+      instance.decayTimer = setTimeout(function() {
+        if (!instance.isVisible) return;
+        const keepSign = instance.lastSign || instance.baseSign;
+        window.gsap.to(instance.tween, { timeScale: keepSign * 1, duration: 1.2, ease: 'power3.out' });
+      }, decayDelay);
+    });
+  }
+
+  window.addEventListener('wheel', function(ev) {
+    if (!instances.length) return;
+    const delta = ev.deltaY || 0;
+    if (!delta) return;
+    applyAcceleration(delta > 0 ? 1 : -1, Math.min(Math.abs(delta) / 120, 6), 0.12, 250);
+  }, { passive: true });
+
+  var lastTouchY = null;
+  var lastTouchTime = null;
+
+  window.addEventListener('touchstart', function(ev) {
+    var t = ev.touches && ev.touches[0];
+    if (!t) return;
+    lastTouchY = t.clientY;
+    lastTouchTime = performance.now();
+  }, { passive: true });
+
+  window.addEventListener('touchmove', function(ev) {
+    var t = ev.touches && ev.touches[0];
+    if (!t || lastTouchY === null) return;
+    var now = performance.now();
+    var dy = t.clientY - lastTouchY;
+    var dt = Math.max(1, now - lastTouchTime);
+    var velocity = dy / dt;
+    lastTouchY = t.clientY;
+    lastTouchTime = now;
+    var amp = Math.min(Math.abs(velocity) * 18, 8);
+    if (amp < 0.02) return;
+    applyAcceleration(velocity > 0 ? 1 : -1, amp, 0.12, 300);
+  }, { passive: true });
+
+  window.addEventListener('touchend', function() {
+    lastTouchY = null;
+  }, { passive: true });
+
+  var scrollStopTimer;
+  window.addEventListener('scroll', function() {
+    if (!instances.length) return;
+    clearTimeout(scrollStopTimer);
+    scrollStopTimer = setTimeout(function() {
+      instances.forEach(function(instance) {
+        if (!instance.isVisible || !window.gsap) return;
+        var keepSign = instance.lastSign || instance.baseSign;
+        window.gsap.to(instance.tween, { timeScale: keepSign * 1, duration: 0.9, ease: 'power3.out' });
+      });
+    }, 350);
+  }, { passive: true });
 
   
 
 
 
-  // Run on initial load
-  if(document.readyState === 'complete' || document.readyState === 'interactive'){
-    // small timeout to let other initialisation complete
-    setTimeout(function(){ initRotateScrollDirection(document); }, 60);
-  } else {
-    document.addEventListener('DOMContentLoaded', function(){
-      setTimeout(function(){ initRotateScrollDirection(document); }, 60);
-    });
-  }
-
-  // Hook into Barba if present so animations run after page enter
-  function attachBarbaHook(){
-    if(window.barba && window.barba.hooks){
-      // afterEnter gives us access to the new container
-      window.barba.hooks.afterEnter(function(data){
-        // animate items within the new container
-        initRotateScrollDirection(data.next.container || document);
-      });
-      return true;
-    }
-    return false;
-  }
-
-  if(!attachBarbaHook()){
-    // If Barba not ready yet, poll until available and then attach
-    var poll = setInterval(function(){
-      if(attachBarbaHook()){
-        clearInterval(poll);
-      }
-    }, 50);
-  }
+  window.initRotateScrollDirection = initRotateScrollDirection;
 
 })();

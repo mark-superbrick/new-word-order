@@ -4,7 +4,7 @@
   const mainDomain = host.split('.')[1];
   let DEBUG = mainDomain == 'webflow';
   // let DEBUG = false;
-  const ENABLE = false;
+  const ENABLE = true;
   
   // Utility to wait for GSAP if not loaded yet
   function whenGsapReady(cb){
@@ -50,36 +50,6 @@
     });
   }
 
-  // Run on initial load
-  if(document.readyState === 'complete' || document.readyState === 'interactive'){
-    // small timeout to let other initialisation complete
-    setTimeout(function(){ animateHeroItems(document); }, 60);
-  } else {
-    document.addEventListener('DOMContentLoaded', function(){
-      setTimeout(function(){ animateHeroItems(document); }, 60);
-    });
-  }
-
-  // Hook into Barba if present so animations run after page enter
-  function attachBarbaHook(){
-    if(window.barba && window.barba.hooks){
-      // afterEnter gives us access to the new container
-      window.barba.hooks.afterEnter(function(data){
-        // animate items within the new container
-        animateHeroItems(data.next.container || document);
-      });
-      return true;
-    }
-    return false;
-  }
-
-  if(!attachBarbaHook()){
-    // If Barba not ready yet, poll until available and then attach
-    var poll = setInterval(function(){
-      if(attachBarbaHook()){
-        clearInterval(poll);
-      }
-    }, 50);
-  }
+  window.animateHeroItems = animateHeroItems;
 
 })();

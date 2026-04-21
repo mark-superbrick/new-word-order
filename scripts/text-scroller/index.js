@@ -22,13 +22,13 @@
   // Initialize a pinned timeline that animates full-screen .section_scroller_item slides
   function initTextScroller(container) {
     const instances = [];
-    
+
     whenGsapReady(function(){
       var gsap = window.gsap;
 
       var root = container || document;
 
-      
+
       const wrappers = root.querySelectorAll('[data-text-scroller-wrap]');
       if (!wrappers || wrappers.length === 0 || !ENABLE) return;
       
@@ -161,47 +161,12 @@
         /**/
       });
 
-      // Debounced resize — ScrollTrigger.refresh() is expensive; don't fire on every pixel
-      let resizeTimer;
-      window.addEventListener('resize', () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => ScrollTrigger.refresh(), 250);
-      });
+      // ScrollTrigger handles resize internally via invalidateOnRefresh: true on each trigger
     });
   }
 
 
 
-  // Run on initial load
-  if(document.readyState === 'complete' || document.readyState === 'interactive'){
-    // small timeout to let other initialisation complete
-    setTimeout(function(){ initTextScroller(document); }, 60);
-  } else {
-    document.addEventListener('DOMContentLoaded', function(){
-      setTimeout(function(){ initTextScroller(document); }, 60);
-    });
-  }
-
-  // Hook into Barba if present so animations run after page enter
-  function attachBarbaHook(){
-    if(window.barba && window.barba.hooks){
-      // afterEnter gives us access to the new container
-      window.barba.hooks.afterEnter(function(data){
-        // animate items within the new container
-        initTextScroller(data.next.container || document);
-      });
-      return true;
-    }
-    return false;
-  }
-
-  if(!attachBarbaHook()){
-    // If Barba not ready yet, poll until available and then attach
-    var poll = setInterval(function(){
-      if(attachBarbaHook()){
-        clearInterval(poll);
-      }
-    }, 50);
-  }
+  window.initTextScroller = initTextScroller;
 
 })();
