@@ -5,6 +5,10 @@ function initCardAnimation() {
   let DEBUG = mainDomain == 'webflow';
   // let DEBUG = false;
   const ENABLE = true;
+  // Disable blur on tablet and smaller — blur is expensive to paint and visually distracting
+  // at smaller sizes. Webflow tablet breakpoint is 991px.
+  const reduceBlur = window.matchMedia('(max-width: 991px)').matches;
+  const blurFull   = reduceBlur ? 'blur(0px)' : 'blur(20px)'; 
 
   if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") {
     console.warn("[card-animations] GSAP or ScrollTrigger not found — skipping.");
@@ -20,7 +24,7 @@ function initCardAnimation() {
   }
 
   // --- Scroll-in: slide up on enter, stay ---
-  gsap.set(cards, { y: 40, opacity: 0 });
+  gsap.set(cards, { filter: blurFull, y: 40, opacity: 0 });
 
   ScrollTrigger.batch(cards, {
     start: "top 90%",
@@ -29,7 +33,8 @@ function initCardAnimation() {
       gsap.to(batch, {
         y: 0,
         opacity: 1,
-        duration: 0.7,
+        filter: 'blur(0px)',
+        duration: 1.5,
         ease: "power3.out",
         stagger: 0.1,
         overwrite: true,
