@@ -22,9 +22,9 @@
   // Initialize a pinned timeline that animates full-screen .section_scroller_item slides
   function initTextScroller(container) {
     const instances = [];
-    var gsap = window.gsap;
-
+    
     whenGsapReady(function(){
+      var gsap = window.gsap;
 
       var root = container || document;
 

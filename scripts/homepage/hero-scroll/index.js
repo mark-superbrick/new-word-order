@@ -21,10 +21,10 @@
 
   // Hero entry + scroll animations
   function initHeroAnimations(container) {
-    var gsap = window.gsap;
     const instances = [];
     
     whenGsapReady(function(){
+      var gsap = window.gsap;
 
       var root = container || document;
       const heroMain = root.querySelector(".home_hero_wrap");

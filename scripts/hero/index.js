@@ -21,10 +21,10 @@
   
   //Hero items entrance animation: fade in from bottom + blur to neutral, staggered.
   function animateHeroItems(container){
-    var gsap = window.gsap;
     const instances = [];
-        
+    
     whenGsapReady(function(){
+      var gsap = window.gsap;
 
       var root = container || document;
       var items = root.querySelectorAll('[data-hero-item]');

@@ -20,10 +20,10 @@
   }
 
   function initMarqueeScrollDirection(container) {
-    var gsap = window.gsap;
     const instances = [];
     
     whenGsapReady(function(){
+      var gsap = window.gsap;
 
       var root = container || document;  
       const marquees = root.querySelectorAll('[data-marquee-scroll-direction-target]');

@@ -21,9 +21,9 @@
 
   function initScrollColors(container) {
     const instances = [];
-    var gsap = window.gsap;
+    
     whenGsapReady(function(){
-          
+      var gsap = window.gsap;
 
       var root = container || document;
 

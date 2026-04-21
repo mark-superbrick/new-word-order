@@ -21,9 +21,9 @@
 
   function initRotateScrollDirection(container) {
     const instances = [];
-    var gsap = window.gsap;
 
     whenGsapReady(function(){
+      var gsap = window.gsap;
 
 
       var root = container || document;
@@ -122,100 +122,75 @@
 
         instances.push(instance);
       });
-    });
-    
 
-    // Helper to apply an instantaneous acceleration to visible instances
-    function applyAcceleration(desiredSign, magnitude, immediateDuration = 0.12, decayDelay = 250) {
-      if (!instances.length) return;
-      instances.forEach((instance) => {
-        if (!instance.isVisible) return;
-        instance.lastSign = desiredSign;
-        const targetMag = 1 + magnitude;
-        gsap.to(instance.tween, { timeScale: desiredSign * targetMag, duration: immediateDuration, ease: 'power2.out' });
-        clearTimeout(instance.decayTimer);
-        instance.decayTimer = setTimeout(() => {
+      // Helper to apply an instantaneous acceleration to visible instances
+      function applyAcceleration(desiredSign, magnitude, immediateDuration, decayDelay) {
+        immediateDuration = immediateDuration || 0.12;
+        decayDelay = decayDelay || 250;
+        if (!instances.length) return;
+        instances.forEach(function(instance) {
           if (!instance.isVisible) return;
-          const keepSign = instance.lastSign || instance.baseSign;
-          gsap.to(instance.tween, { timeScale: keepSign * 1, duration: 1.2, ease: 'power3.out' });
-        }, decayDelay);
-      });
-    }
-
-    // Wheel handler: increase rotation speed proportional to wheel delta, direct rotation to match scroll direction.
-    // Applies only to visible instances.
-    window.addEventListener('wheel', function (ev) {
-      // If no instances, skip
-      if (!instances.length) return;
-
-      const delta = ev.deltaY || 0;
-      if (!delta) return;
-
-      const scrollDir = delta > 0 ? 1 : -1; // positive deltaY = scroll down
-
-      // Map delta magnitude to an amplifier. Tweak divisor to adjust sensitivity.
-      // Use a slightly tuned mapping so trackpad and mouse wheel both feel good.
-      const amp = Math.min(Math.abs(delta) / 120, 6); // baseline mapping (unchanged)
-
-      applyAcceleration(scrollDir, amp, 0.12, 250);
-    }, { passive: true });
-
-    // Touch handling: derive a fling-like velocity from touchmove and apply acceleration
-    let lastTouchY = null;
-    let lastTouchTime = null;
-    let touchActive = false;
-
-    window.addEventListener('touchstart', function (ev) {
-      const t = ev.touches && ev.touches[0];
-      if (!t) return;
-      touchActive = true;
-      lastTouchY = t.clientY;
-      lastTouchTime = performance.now();
-      // cancel any global scroll-stop reset while actively touching
-    }, { passive: true });
-
-    window.addEventListener('touchmove', function (ev) {
-      const t = ev.touches && ev.touches[0];
-      if (!t || lastTouchY === null) return;
-
-      const now = performance.now();
-      const dy = t.clientY - lastTouchY; // positive when moving down (finger moving down -> page scroll down)
-      const dt = Math.max(1, now - lastTouchTime);
-      const velocity = dy / dt; // px per ms
-
-      lastTouchY = t.clientY;
-      lastTouchTime = now;
-
-      // Convert velocity to a magnitude roughly comparable to wheel amp.
-      // Tune factor so a typical swipe produces a noticeable but not insane speed-up.
-      const velocityAbs = Math.abs(velocity);
-      const amp = Math.min(velocityAbs * 18, 8); // tuned multiplier and clamp
-
-      if (amp < 0.02) return; // ignore micro-movements
-
-      const desiredSign = velocity > 0 ? 1 : -1; // finger moving down => content moves down => positive
-
-      applyAcceleration(desiredSign, amp, 0.12, 300);
-    }, { passive: true });
-
-    window.addEventListener('touchend', function () {
-      touchActive = false;
-      // Let the per-instance decay timers handle returning to base speed.
-    }, { passive: true });
-
-    // When a user stops scrolling/touchpad, return to base speed after a short delay but keep the direction
-    let scrollStopTimer;
-    window.addEventListener('scroll', function () {
-      clearTimeout(scrollStopTimer);
-      scrollStopTimer = setTimeout(() => {
-        instances.forEach((instance) => {
-          if (!instance.isVisible) return;
-          const keepSign = instance.lastSign || instance.baseSign;
-          // return to base magnitude (1) but preserve the last direction sign
-          gsap.to(instance.tween, { timeScale: keepSign * 1, duration: 0.9, ease: 'power3.out' });
+          instance.lastSign = desiredSign;
+          const targetMag = 1 + magnitude;
+          gsap.to(instance.tween, { timeScale: desiredSign * targetMag, duration: immediateDuration, ease: 'power2.out' });
+          clearTimeout(instance.decayTimer);
+          instance.decayTimer = setTimeout(function() {
+            if (!instance.isVisible) return;
+            const keepSign = instance.lastSign || instance.baseSign;
+            gsap.to(instance.tween, { timeScale: keepSign * 1, duration: 1.2, ease: 'power3.out' });
+          }, decayDelay);
         });
-      }, 350);
-    }, { passive: true });
+      }
+
+      window.addEventListener('wheel', function(ev) {
+        if (!instances.length) return;
+        const delta = ev.deltaY || 0;
+        if (!delta) return;
+        const scrollDir = delta > 0 ? 1 : -1;
+        const amp = Math.min(Math.abs(delta) / 120, 6);
+        applyAcceleration(scrollDir, amp, 0.12, 250);
+      }, { passive: true });
+
+      let lastTouchY = null;
+      let lastTouchTime = null;
+
+      window.addEventListener('touchstart', function(ev) {
+        const t = ev.touches && ev.touches[0];
+        if (!t) return;
+        lastTouchY = t.clientY;
+        lastTouchTime = performance.now();
+      }, { passive: true });
+
+      window.addEventListener('touchmove', function(ev) {
+        const t = ev.touches && ev.touches[0];
+        if (!t || lastTouchY === null) return;
+        const now = performance.now();
+        const dy = t.clientY - lastTouchY;
+        const dt = Math.max(1, now - lastTouchTime);
+        const velocity = dy / dt;
+        lastTouchY = t.clientY;
+        lastTouchTime = now;
+        const amp = Math.min(Math.abs(velocity) * 18, 8);
+        if (amp < 0.02) return;
+        applyAcceleration(velocity > 0 ? 1 : -1, amp, 0.12, 300);
+      }, { passive: true });
+
+      window.addEventListener('touchend', function() {
+        lastTouchY = null;
+      }, { passive: true });
+
+      let scrollStopTimer;
+      window.addEventListener('scroll', function() {
+        clearTimeout(scrollStopTimer);
+        scrollStopTimer = setTimeout(function() {
+          instances.forEach(function(instance) {
+            if (!instance.isVisible) return;
+            const keepSign = instance.lastSign || instance.baseSign;
+            gsap.to(instance.tween, { timeScale: keepSign * 1, duration: 0.9, ease: 'power3.out' });
+          });
+        }, 350);
+      }, { passive: true });
+    });
   }
 
   

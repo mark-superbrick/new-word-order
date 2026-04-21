@@ -20,10 +20,10 @@
   }
 
   function initMegaNavDirectionalHover(container) {
-    var gsap = window.gsap;    
     const instances = [];
     
     whenGsapReady(function(){
+      var gsap = window.gsap;    
 
       var root = container || document;  
 
