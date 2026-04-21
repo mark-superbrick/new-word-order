@@ -1,0 +1,36 @@
+
+[data-menu-wrap] {
+  --nav-height: 5.25em;
+}
+
+.mega-nav__panel-col:last-of-type {
+  border: none;
+}
+.mega-nav__bar-logo,
+.mega-nav__bar-link {
+  color: inherit;
+}
+/* .mega-nav__bar-link.w--current {
+  font-family: var(--_typography---font-family--body);
+  font-variation-settings: "wdth" 88, "wght" 800;
+} */
+
+/* Allow easier content editing when panel state is 'active' inside of the designer*/
+.wf-design-mode [data-nav-content][data-panel-state="active"] {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  position: relative;
+}
+
+.wf-design-mode [data-menu-open]:has( [data-nav-content][data-panel-state="active"]) [data-dropdown-bg] {
+  opacity: 1;
+  inset: 0;
+}
+
+.wf-design-mode [data-mobile-nav="active"] {
+  opacity: 1;
+  visibility: visible;
+}
+
+
