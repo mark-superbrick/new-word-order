@@ -1,0 +1,10 @@
+
+
+/* Nav Theme */
+[data-theme-nav="light"] .mega-nav__bar-start {
+  color: var(--base-color---neutral--black);
+}
+
+[data-theme-nav="dark"] .mega-nav__bar-start {
+  color: var(--base-color--offwhite);
+}
