@@ -1,116 +1,157 @@
-// Hero entry + scroll animations
-function initHeroAnimations() {
+(function() {
+
   const host = window.location.host;
   const mainDomain = host.split('.')[1];
-  // let DEBUG = mainDomain !== 'webflow';
+  // let DEBUG = mainDomain == 'webflow';
   let DEBUG = false;
-  const ENABLE = true;  // <-- master toggle for hero scroll animations; set to false to disable all related code, including ScrollTrigger creation and entry animation
-
-  if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") {
-    // Wait for GSAP + ScrollTrigger to be available
-    console.warn("GSAP or ScrollTrigger not available yet. Retrying...");
-    setTimeout(initHeroAnimations, 100);
-    return;
+  const ENABLE = true;
+    
+  // Utility to wait for GSAP if not loaded yet
+  function whenGsapReady(cb){
+    if(window.gsap){
+      return cb();
+    }
+    var t = setInterval(function(){
+      if(window.gsap){
+        clearInterval(t);
+        cb();
+      }
+    }, 50);
   }
 
-  gsap.registerPlugin(ScrollTrigger);
+  // Hero entry + scroll animations
+  function initHeroAnimations(container) {
+    var gsap = window.gsap;
+    const instances = [];
+    
+    whenGsapReady(function(){
 
-  const heroMain = document.querySelector(".home_hero_wrap");
-  if (!heroMain || !ENABLE) 
-    return;
-  const heroImg = heroMain.querySelector('img');
-  const background = heroMain.querySelector(".background_overlay");
-  const spark = heroMain.querySelector(".home_hero_spark");
-  const content = heroMain.querySelector(".home_hero_content");
-  // Fallback: look for any element with a data-number attribute inside hero
-  const mediaOverlay = heroMain.querySelector(".media_overlay");
-  // Promote scrubbed elements to compositor layers before animation starts —
-  // without this, every scroll tick forces a repaint of the entire home_hero_wrap.
-  // if (spark) spark.style.willChange = 'transform, opacity';
-  if (spark) spark.style.transform = 'translateZ(0)';
-  // if (content) content.style.willChange = 'transform, opacity';
-  if (content) content.style.transform = 'translateZ(0)';
+      var root = container || document;
+      const heroMain = root.querySelector(".home_hero_wrap");
+      if (!heroMain || heroMain.length === 0 ||  !ENABLE) return;
 
-  // Ensure initial states
-  if (background) gsap.set(background, { autoAlpha: 0 });
-  if (spark) gsap.set(spark, { scale: 5, transformOrigin: "50% 50%" });
-  if (content) gsap.set(content, { xPercent: 100, autoAlpha: 1 });
-  if (mediaOverlay && mediaOverlay.dataset)
-    mediaOverlay.setAttribute(
-      "data-number",
-      mediaOverlay.dataset.number || "0",
-    );
+      const heroImg = heroMain.querySelector('img');
+      const background = heroMain.querySelector(".background_overlay");
+      const spark = heroMain.querySelector(".home_hero_spark");
+      const content = heroMain.querySelector(".home_hero_content");
+      // Fallback: look for any element with a data-number attribute inside hero
+      const mediaOverlay = heroMain.querySelector(".media_overlay");
+      // Promote scrubbed elements to compositor layers before animation starts —
+      // without this, every scroll tick forces a repaint of the entire home_hero_wrap.
+      // if (spark) spark.style.willChange = 'transform, opacity';
+      if (spark) spark.style.transform = 'translateZ(0)';
+      // if (content) content.style.willChange = 'transform, opacity';
+      if (content) content.style.transform = 'translateZ(0)';
 
-  // Entry animation — runs once on load, independent of scroll.
-  const entry = gsap.timeline({ defaults: { duration: 1, ease: "power3.out" } });
-  entry.to(background || {}, { autoAlpha: 1 }, 0);
-  entry.to(spark || {}, { scale: 3, transformOrigin: "50% 50%" }, 0);
-  entry.to(content || {}, { xPercent: 0 }, 0.05);
+      // Ensure initial states
+      if (background) gsap.set(background, { autoAlpha: 0 });
+      if (spark) gsap.set(spark, { scale: 5, transformOrigin: "50% 50%" });
+      if (content) gsap.set(content, { xPercent: 100, autoAlpha: 1 });
+      if (mediaOverlay && mediaOverlay.dataset)
+        mediaOverlay.setAttribute(
+          "data-number",
+          mediaOverlay.dataset.number || "0",
+        );
 
-  // Hero scroll-scrubbed timeline — created IMMEDIATELY (not inside entry.call).
-  // Uses .fromTo() with the post-entry state as the "from" so the scrub
-  // picks up cleanly where the entry leaves off, even though it's created
-  // before the entry has visibly played.
-  // let ctx = gsap.context(() => {
-    if (heroImg.complete && heroImg.naturalWidth !== 0) {
-      // Image already loaded
-      heroTL();
-    } else {
-      // Wait for image to load
-      heroImg.addEventListener("load", heroTL, { once: true });
-    }
+      // Entry animation — runs once on load, independent of scroll.
+      const entry = gsap.timeline({ defaults: { duration: 1, ease: "power3.out" } });
+      entry.to(background || {}, { autoAlpha: 1 }, 0);
+      entry.to(spark || {}, { scale: 3, transformOrigin: "50% 50%" }, 0);
+      entry.to(content || {}, { xPercent: 0 }, 0.05);
+
+      // Hero scroll-scrubbed timeline — created IMMEDIATELY (not inside entry.call).
+      // Uses .fromTo() with the post-entry state as the "from" so the scrub
+      // picks up cleanly where the entry leaves off, even though it's created
+      // before the entry has visibly played.
+      // let ctx = gsap.context(() => {
+        if (heroImg.complete && heroImg.naturalWidth !== 0) {
+          // Image already loaded
+          heroTL();
+        } else {
+          // Wait for image to load
+          heroImg.addEventListener("load", heroTL, { once: true });
+        }
 
 
-    function heroTL() {
-      const totalScroll = window.innerHeight * 2;
-      // Dirty-check: avoid setAttribute DOM write when value hasn't changed
-      let lastValue = -1;
-      const scrollTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: heroMain,
-          start: "top top",
-          end: () => `+=${totalScroll}`,
-          // end: "bottom top",
-          scrub: true,
-          pin: true,
-          pinSpacing: false,         // <-- was false; now reserves scroll distance so alt_wrap no longer overlaps
-          invalidateOnRefresh: true,
-          markers: DEBUG,
-          id: "main",
-          refreshPriority: 1,
-          onUpdate(self) {
-            const progress = Math.max(0, Math.min(1, self.progress || 0));
-            const value = Math.round(progress * 100);
-            if (value === lastValue) return;
-            lastValue = value;
-            if (mediaOverlay && mediaOverlay.setAttribute) mediaOverlay.setAttribute("data-number", String(value));
-          },
-        },
+        function heroTL() {
+          const totalScroll = window.innerHeight * 2;
+          // Dirty-check: avoid setAttribute DOM write when value hasn't changed
+          let lastValue = -1;
+          const scrollTl = gsap.timeline({
+            scrollTrigger: {
+              trigger: heroMain,
+              start: "top top",
+              end: () => `+=${totalScroll}`,
+              // end: "bottom top",
+              scrub: true,
+              pin: true,
+              pinSpacing: false,         // <-- was false; now reserves scroll distance so alt_wrap no longer overlaps
+              invalidateOnRefresh: true,
+              markers: DEBUG,
+              id: "main",
+              refreshPriority: 1,
+              onUpdate(self) {
+                const progress = Math.max(0, Math.min(1, self.progress || 0));
+                const value = Math.round(progress * 100);
+                if (value === lastValue) return;
+                lastValue = value;
+                if (mediaOverlay && mediaOverlay.setAttribute) mediaOverlay.setAttribute("data-number", String(value));
+              },
+            },
+          });
+          if (spark) {
+            scrollTl.fromTo(spark,
+              { scale: 3, rotation: 0 },
+              { scale: 0.1, rotation: 180, opacity: 0, transformOrigin: "50% 50%", ease: "none" },
+              0
+            );
+          }
+          if (content) {
+            scrollTl.fromTo(content,
+              { xPercent: 0, opacity: 1 },
+              { xPercent: -30, opacity: 0, ease: "none" },
+              0
+            );
+          }
+          // Refresh handled by the outer requestAnimationFrame in DOMContentLoaded
+        }
+      // });
+    });
+  }
+
+
+
+
+  // Run on initial load
+  if(document.readyState === 'complete' || document.readyState === 'interactive'){
+    // small timeout to let other initialisation complete
+    setTimeout(function(){ initHeroAnimations(document); }, 60);
+  } else {
+    document.addEventListener('DOMContentLoaded', function(){
+      setTimeout(function(){ initHeroAnimations(document); }, 60);
+    });
+  }
+
+  // Hook into Barba if present so animations run after page enter
+  function attachBarbaHook(){
+    if(window.barba && window.barba.hooks){
+      // afterEnter gives us access to the new container
+      window.barba.hooks.afterEnter(function(data){
+        // animate items within the new container
+        initHeroAnimations(data.next.container || document);
       });
-      if (spark) {
-        scrollTl.fromTo(spark,
-          { scale: 3, rotation: 0 },
-          { scale: 0.1, rotation: 180, opacity: 0, transformOrigin: "50% 50%", ease: "none" },
-          0
-        );
-      }
-      if (content) {
-        scrollTl.fromTo(content,
-          { xPercent: 0, opacity: 1 },
-          { xPercent: -30, opacity: 0, ease: "none" },
-          0
-        );
-      }
-      // Refresh handled by the outer requestAnimationFrame in DOMContentLoaded
+      return true;
     }
-  // });
+    return false;
+  }
 
+  if(!attachBarbaHook()){
+    // If Barba not ready yet, poll until available and then attach
+    var poll = setInterval(function(){
+      if(attachBarbaHook()){
+        clearInterval(poll);
+      }
+    }, 50);
+  }
 
-
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  document.fonts.ready.then(() => {
-    initHeroAnimations();
-  });
-});
+})();
