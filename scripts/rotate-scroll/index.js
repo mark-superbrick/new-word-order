@@ -1,99 +1,151 @@
-
 function initRotateScrollDirection() {
+
   const host = window.location.host;
   const mainDomain = host.split('.')[1];
-  // let DEBUG = mainDomain == 'webflow';
-  let DEBUG = false;
+  let DEBUG = mainDomain == 'webflow';
+  // let DEBUG = false;
   const ENABLE = true;
 
-  gsap.registerPlugin(ScrollTrigger);
-  
-  const rotates = document.querySelectorAll('[data-rotate-scroll-direction-target]');
-  if (!rotates || rotates.length === 0 || !ENABLE) return;
-  
-  rotates.forEach((rotate) => {
-    // Query rotate elements
-    const rotateContent = rotate.querySelector('[data-rotate-collection-target]');
-    const rotateScroll = rotate.querySelector('[data-rotate-scroll-target]');
-    if (!rotateContent || !rotateScroll) return;
+  const instances = [];
+  const targets = document.querySelectorAll('[data-rotate-collection-target]');
+  if (!targets || !ENABLE) return;
 
-    // Get data attributes
-    const { rotateSpeed: speed, rotateDirection: direction, rotateDuplicate: duplicate, rotateScrollSpeed: scrollSpeed } = rotate.dataset;
+  // Find all rotate collections and create a continuous rotation tween for each.
+  targets.forEach((collection) => {
+    // scrollTarget is expected to be an ancestor with data-rotate-scroll-target
+    const scrollTarget = collection.closest('[data-rotate-scroll-target]') || collection;
 
-    // Convert data attributes to usable types
-    const rotateSpeedAttr = parseFloat(speed);
-    const rotateDirectionAttr = direction === 'clockwise' ? 1 : -1; // 1 for clockwise, -1 for counter-clockwise
-    const duplicateAmount = parseInt(duplicate || 0);
-    const scrollSpeedAttr = parseFloat(scrollSpeed);
-    const speedMultiplier = window.innerWidth < 479 ? 0.25 : window.innerWidth < 991 ? 0.5 : 1;
+    // directionTarget can be used to store config attributes if present
+    const directionTarget = collection.closest('[data-rotate-scroll-direction-target]') || scrollTarget || collection;
 
-    let rotateSpeed = rotateSpeedAttr * (rotateContent.offsetWidth / window.innerWidth) * speedMultiplier;
+    // Resolve default speeds and direction from dataset (fallbacks applied)
+    const rotateSpeedAttr = (
+      directionTarget?.dataset?.rotateSpeed ||
+      scrollTarget?.dataset?.rotateSpeed ||
+      collection?.dataset?.rotateSpeed
+    );
+    const rotateSpeed = parseFloat(rotateSpeedAttr) || 15; // seconds for one revolution by default
 
-    // Precompute styles for the scroll container
-    rotateScroll.style.rotate = `${scrollSpeedAttr * -1}deg`;
-    // rotateScroll.style.width = `${(scrollSpeedAttr * 2) + 100}%`;
+    const defaultDirection = (
+      directionTarget?.dataset?.rotateDirection ||
+      scrollTarget?.dataset?.rotateDirection ||
+      collection?.dataset?.rotateDirection ||
+      'clockwise'
+    ).toLowerCase();
 
-    // Duplicate rotate content
-    if (duplicateAmount > 0) {
-      const fragment = document.createDocumentFragment();
-      for (let i = 0; i < duplicateAmount; i++) {
-        fragment.appendChild(rotateContent.cloneNode(true));
-      }
-      rotateScroll.appendChild(fragment);
+    const baseSign = defaultDirection === 'counterclockwise' ? -1 : 1;
+
+    // The element to rotate: prefer an inline svg inside the collection
+    const svg = collection.querySelector('svg') || collection;
+    if (!svg) return;
+
+    // Create an infinite rotation tween. We rotate by +=360 so direction flipping works via timeScale sign.
+    const tween = gsap.to(svg, {
+      rotation: '+=360',
+      repeat: -1,
+      ease: 'none',
+      duration: rotateSpeed,
+      transformOrigin: '50% 50%'
+    });
+
+    // Initialize with the base direction (1 or -1)
+    try { tween.timeScale(baseSign); } catch (e) { /* defensive */ }
+
+    const instance = {
+      collection,
+      scrollTarget,
+      directionTarget,
+      svg,
+      tween,
+      baseSign,
+      isVisible: true,
+      decayTimer: null
+    };
+
+    // Observe visibility so behavior only runs while in view
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        instance.isVisible = entry.isIntersecting;
+        if (!instance.isVisible) {
+          // When out of view, gently return to the default rotation speed & direction
+          gsap.to(instance.tween, { timeScale: instance.baseSign * 1, duration: 0.6, ease: 'power3.out' });
+        }
+      });
+    }, { threshold: 0.12 });
+    io.observe(scrollTarget || collection);
+    instance._io = io;
+
+    // Use ScrollTrigger to flip direction while the section is in the viewport based on scroll direction
+    try {
+      ScrollTrigger.create({
+        trigger: scrollTarget || collection,
+        start: 'top bottom',
+        end: 'bottom top',
+        onUpdate(self) {
+          if (!instance.isVisible) return;
+          const desiredSign = self.direction === 1 ? 1 : -1; // 1 => scrolling down, -1 => scrolling up
+          // preserve current magnitude, just change sign smoothly
+          const curMag = Math.max(Math.abs(instance.tween.timeScale() || 1), 0.001);
+          gsap.to(instance.tween, { timeScale: desiredSign * curMag, duration: 0.45, ease: 'power3.out' });
+        }
+      });
+    } catch (err) {
+      // fail quietly if ScrollTrigger config isn't supported here
     }
 
-    // GSAP animation for rotate content
-    const rotateItems = rotate.querySelectorAll('[data-rotate-collection-target]');
-    const animation = gsap.to(rotateItems, {
-      rotate: -100, // Move completely out of view
-      repeat: -1,
-      duration: rotateSpeed,
-      ease: 'linear'
-    }).totalProgress(0.5);
-
-    // Initialize rotate in the correct direction
-    gsap.set(rotateItems, { rotate: rotateDirectionAttr === 1 ? 100 : -100 });
-    animation.timeScale(rotateDirectionAttr); // Set correct direction
-    animation.play(); // Start animation immediately
-
-    // Set initial rotate status
-    rotate.setAttribute('data-rotate-status', 'normal');
-
-    // ScrollTrigger logic for direction inversion
-    ScrollTrigger.create({
-      trigger: rotate,
-      start: 'top bottom',
-      end: 'bottom top',
-      onUpdate: (self) => {
-        const isInverted = self.direction === 1; // Scrolling down
-        const currentDirection = isInverted ? -rotateDirectionAttr : rotateDirectionAttr;
-
-        // Update animation direction and rotate status
-        animation.timeScale(currentDirection);
-        rotate.setAttribute('data-rotate-status', isInverted ? 'normal' : 'inverted');
-      }
-    });
-
-    // Extra speed effect on scroll
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: rotate,
-        start: '0% 100%',
-        end: '100% 0%',
-        scrub: 0
-      }
-    });
-
-    const scrollStart = rotateDirectionAttr === -1 ? scrollSpeedAttr : -scrollSpeedAttr;
-    const scrollEnd = -scrollStart;
-
-    tl.fromTo(rotateScroll, { rotate: `${scrollStart}deg` }, { x: `${scrollEnd}deg`, ease: 'none' });
+    instances.push(instance);
   });
+
+  // Wheel handler: increase rotation speed proportional to wheel delta, direct rotation to match scroll direction.
+  // Applies only to visible instances.
+  window.addEventListener('wheel', function (ev) {
+    // If no instances, skip
+    if (!instances.length) return;
+
+    instances.forEach((instance) => {
+      if (!instance.isVisible) return;
+
+      const delta = ev.deltaY || 0;
+      if (!delta) return;
+
+      const scrollDir = delta > 0 ? 1 : -1; // positive deltaY = scroll down
+
+      // Map delta magnitude to an amplifier. Tweak divisor to adjust sensitivity.
+      const amp = Math.min(Math.abs(delta) / 120, 6); // typical mouse wheel ~100-120 units
+      const targetMag = 1 + amp; // timeScale magnitude: 1 => default speed, larger => faster
+
+      // Desired sign is the scroll direction while the wheel is moving
+      const desiredSign = scrollDir;
+
+      // Apply immediate acceleration (short tween so it feels snappy)
+      gsap.to(instance.tween, { timeScale: desiredSign * targetMag, duration: 0.12, ease: 'power2.out' });
+
+      // Clear previous decay timer
+      clearTimeout(instance.decayTimer);
+
+      // Schedule decay back to base after wheel inactivity
+      instance.decayTimer = setTimeout(() => {
+        if (!instance.isVisible) return;
+        gsap.to(instance.tween, { timeScale: instance.baseSign * 1, duration: 1.2, ease: 'power3.out' });
+      }, 250);
+    });
+  }, { passive: true });
+
+  // When a user stops scrolling/touchpad, return to base speed/direction after a short delay.
+  let scrollStopTimer;
+  window.addEventListener('scroll', function () {
+    clearTimeout(scrollStopTimer);
+    scrollStopTimer = setTimeout(() => {
+      instances.forEach((instance) => {
+        if (!instance.isVisible) return;
+        gsap.to(instance.tween, { timeScale: instance.baseSign * 1, duration: 0.9, ease: 'power3.out' });
+      });
+    }, 350);
+  }, { passive: true });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Initialize rotate with Scroll Direction
-  initRotateScrollDirection();
 
-  requestAnimationFrame(() => ScrollTrigger.refresh());
+document.addEventListener("DOMContentLoaded", () => {
+  // Initialize Rotate with Scroll Direction
+  initRotateScrollDirection();
 });
