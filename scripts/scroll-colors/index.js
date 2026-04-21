@@ -136,7 +136,5 @@ function initScrollColors() {
 
 
 document.addEventListener("DOMContentLoaded", () => {
-  document.fonts.ready.then(() => {
-    initScrollColors();
-  });
+  initScrollColors();
 });

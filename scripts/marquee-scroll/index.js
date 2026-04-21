@@ -6,6 +6,8 @@ function initMarqueeScrollDirection() {
   let DEBUG = false;
   const ENABLE = true;  // <-- master toggle for hero scroll animations; set to false to disable all related code, including ScrollTrigger creation and entry animation
 
+  gsap.registerPlugin(ScrollTrigger);
+  
   const marquees = document.querySelectorAll('[data-marquee-scroll-direction-target]');
   if (!marquees || marquees.length === 0 || !ENABLE) return;
   
@@ -90,10 +92,8 @@ function initMarqueeScrollDirection() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  document.fonts.ready.then(() => {
-    // Initialize Marquee with Scroll Direction
-    initMarqueeScrollDirection();
+  // Initialize Marquee with Scroll Direction
+  initMarqueeScrollDirection();
 
-    requestAnimationFrame(() => ScrollTrigger.refresh());
-  });
+  requestAnimationFrame(() => ScrollTrigger.refresh());
 });

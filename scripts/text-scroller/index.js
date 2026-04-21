@@ -148,7 +148,5 @@ function initTextScroller() {
 
 
 document.addEventListener("DOMContentLoaded", () => {
-  document.fonts.ready.then(() => {
-    initTextScroller();  // creates text scrollers (priority 3)
-  });
+  initTextScroller();  
 });
