@@ -5,13 +5,16 @@ function initRotateScrollDirection() {
   let DEBUG = mainDomain == 'webflow';
   // let DEBUG = false;
   const ENABLE = true;
-
+  
+  gsap.registerPlugin(ScrollTrigger);
+  
   const instances = [];
-  const targets = document.querySelectorAll('[data-rotate-collection-target]');
-  if (!targets || !ENABLE) return;
+  const collections = document.querySelectorAll('[data-rotate-collection-target]');
+  if (!collections || collections.length === 0 || !ENABLE) return;
+
 
   // Find all rotate collections and create a continuous rotation tween for each.
-  targets.forEach((collection) => {
+  collections.forEach((collection) => {
     // scrollTarget is expected to be an ancestor with data-rotate-scroll-target
     const scrollTarget = collection.closest('[data-rotate-scroll-target]') || collection;
 
@@ -58,6 +61,8 @@ function initRotateScrollDirection() {
       svg,
       tween,
       baseSign,
+      // lastSign keeps track of the most recent scroll direction so we can return to that
+      lastSign: baseSign,
       isVisible: true,
       decayTimer: null
     };
@@ -84,6 +89,8 @@ function initRotateScrollDirection() {
         onUpdate(self) {
           if (!instance.isVisible) return;
           const desiredSign = self.direction === 1 ? 1 : -1; // 1 => scrolling down, -1 => scrolling up
+          // remember the most recent direction so we can return to it when scrolling stops
+          instance.lastSign = desiredSign;
           // preserve current magnitude, just change sign smoothly
           const curMag = Math.max(Math.abs(instance.tween.timeScale() || 1), 0.001);
           gsap.to(instance.tween, { timeScale: desiredSign * curMag, duration: 0.45, ease: 'power3.out' });
@@ -96,56 +103,104 @@ function initRotateScrollDirection() {
     instances.push(instance);
   });
 
+  // Helper to apply an instantaneous acceleration to visible instances
+  function applyAcceleration(desiredSign, magnitude, immediateDuration = 0.12, decayDelay = 250) {
+    if (!instances.length) return;
+    instances.forEach((instance) => {
+      if (!instance.isVisible) return;
+      instance.lastSign = desiredSign;
+      const targetMag = 1 + magnitude;
+      gsap.to(instance.tween, { timeScale: desiredSign * targetMag, duration: immediateDuration, ease: 'power2.out' });
+      clearTimeout(instance.decayTimer);
+      instance.decayTimer = setTimeout(() => {
+        if (!instance.isVisible) return;
+        const keepSign = instance.lastSign || instance.baseSign;
+        gsap.to(instance.tween, { timeScale: keepSign * 1, duration: 1.2, ease: 'power3.out' });
+      }, decayDelay);
+    });
+  }
+
   // Wheel handler: increase rotation speed proportional to wheel delta, direct rotation to match scroll direction.
   // Applies only to visible instances.
   window.addEventListener('wheel', function (ev) {
     // If no instances, skip
     if (!instances.length) return;
 
-    instances.forEach((instance) => {
-      if (!instance.isVisible) return;
+    const delta = ev.deltaY || 0;
+    if (!delta) return;
 
-      const delta = ev.deltaY || 0;
-      if (!delta) return;
+    const scrollDir = delta > 0 ? 1 : -1; // positive deltaY = scroll down
 
-      const scrollDir = delta > 0 ? 1 : -1; // positive deltaY = scroll down
+    // Map delta magnitude to an amplifier. Tweak divisor to adjust sensitivity.
+    // Use a slightly tuned mapping so trackpad and mouse wheel both feel good.
+    const amp = Math.min(Math.abs(delta) / 120, 6); // baseline mapping (unchanged)
 
-      // Map delta magnitude to an amplifier. Tweak divisor to adjust sensitivity.
-      const amp = Math.min(Math.abs(delta) / 120, 6); // typical mouse wheel ~100-120 units
-      const targetMag = 1 + amp; // timeScale magnitude: 1 => default speed, larger => faster
-
-      // Desired sign is the scroll direction while the wheel is moving
-      const desiredSign = scrollDir;
-
-      // Apply immediate acceleration (short tween so it feels snappy)
-      gsap.to(instance.tween, { timeScale: desiredSign * targetMag, duration: 0.12, ease: 'power2.out' });
-
-      // Clear previous decay timer
-      clearTimeout(instance.decayTimer);
-
-      // Schedule decay back to base after wheel inactivity
-      instance.decayTimer = setTimeout(() => {
-        if (!instance.isVisible) return;
-        gsap.to(instance.tween, { timeScale: instance.baseSign * 1, duration: 1.2, ease: 'power3.out' });
-      }, 250);
-    });
+    applyAcceleration(scrollDir, amp, 0.12, 250);
   }, { passive: true });
 
-  // When a user stops scrolling/touchpad, return to base speed/direction after a short delay.
+  // Touch handling: derive a fling-like velocity from touchmove and apply acceleration
+  let lastTouchY = null;
+  let lastTouchTime = null;
+  let touchActive = false;
+
+  window.addEventListener('touchstart', function (ev) {
+    const t = ev.touches && ev.touches[0];
+    if (!t) return;
+    touchActive = true;
+    lastTouchY = t.clientY;
+    lastTouchTime = performance.now();
+    // cancel any global scroll-stop reset while actively touching
+  }, { passive: true });
+
+  window.addEventListener('touchmove', function (ev) {
+    const t = ev.touches && ev.touches[0];
+    if (!t || lastTouchY === null) return;
+
+    const now = performance.now();
+    const dy = t.clientY - lastTouchY; // positive when moving down (finger moving down -> page scroll down)
+    const dt = Math.max(1, now - lastTouchTime);
+    const velocity = dy / dt; // px per ms
+
+    lastTouchY = t.clientY;
+    lastTouchTime = now;
+
+    // Convert velocity to a magnitude roughly comparable to wheel amp.
+    // Tune factor so a typical swipe produces a noticeable but not insane speed-up.
+    const velocityAbs = Math.abs(velocity);
+    const amp = Math.min(velocityAbs * 18, 8); // tuned multiplier and clamp
+
+    if (amp < 0.02) return; // ignore micro-movements
+
+    const desiredSign = velocity > 0 ? 1 : -1; // finger moving down => content moves down => positive
+
+    applyAcceleration(desiredSign, amp, 0.12, 300);
+  }, { passive: true });
+
+  window.addEventListener('touchend', function () {
+    touchActive = false;
+    // Let the per-instance decay timers handle returning to base speed.
+  }, { passive: true });
+
+  // When a user stops scrolling/touchpad, return to base speed after a short delay but keep the direction
   let scrollStopTimer;
   window.addEventListener('scroll', function () {
     clearTimeout(scrollStopTimer);
     scrollStopTimer = setTimeout(() => {
       instances.forEach((instance) => {
         if (!instance.isVisible) return;
-        gsap.to(instance.tween, { timeScale: instance.baseSign * 1, duration: 0.9, ease: 'power3.out' });
+        const keepSign = instance.lastSign || instance.baseSign;
+        // return to base magnitude (1) but preserve the last direction sign
+        gsap.to(instance.tween, { timeScale: keepSign * 1, duration: 0.9, ease: 'power3.out' });
       });
     }, 350);
   }, { passive: true });
 }
 
 
+
 document.addEventListener("DOMContentLoaded", () => {
   // Initialize Rotate with Scroll Direction
   initRotateScrollDirection();
+
+  requestAnimationFrame(() => ScrollTrigger.refresh());
 });
