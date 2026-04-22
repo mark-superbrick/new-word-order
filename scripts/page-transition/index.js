@@ -48,12 +48,14 @@ function initBeforeEnterFunctions(next) {
 function initAfterEnterFunctions(next) {
   nextPage = next || document;
 
-  if (has('.home_hero_wrap') && window.initHeroAnimations) window.initHeroAnimations(nextPage);
-  if (has('.home_hero_alt_wrap') && window.initHeroAltAnimations) window.initHeroAltAnimations(nextPage);
-  if (has('[data-text-scroller-wrap]') && window.initTextScroller) window.initTextScroller(nextPage);
-  if (has('[data-rotate-collection-target]') && window.initRotateScrollDirection) window.initRotateScrollDirection(nextPage);
-  if (has('[data-footer-parallax]') && window.initFooterParallax) window.initFooterParallax(nextPage);
-  if (has('[data-hero-item]') && window.animateHeroItems) window.animateHeroItems(nextPage);
+  // Runs after the enter animation completes
+  // if (has('[data-something]')) initSomething();
+
+  // Page-specific animations that should run on every page can be called here, or within their own init functions that are called here. For example:
+  initPageAnimations();
+  
+  // update the current nav item based on URL
+  updateCurrentNav();
 }
 
 
@@ -193,6 +195,9 @@ barba.hooks.afterEnter(data => {
   // Force layout recalc after resetPage clears position:fixed, then refresh triggers
   data.next.container.getBoundingClientRect();
   if (hasScrollTrigger) ScrollTrigger.refresh();
+
+
+
 });
 
 barba.init({
@@ -330,4 +335,32 @@ function initBarbaNavUpdate(data) {
 // -----------------------------------------
 // YOUR FUNCTIONS GO BELOW HERE
 // -----------------------------------------
-  
+
+function initPageAnimations() {
+  if (has('.home_hero_wrap') && window.initHeroAnimations) window.initHeroAnimations(nextPage);
+  if (has('.home_hero_alt_wrap') && window.initHeroAltAnimations) window.initHeroAltAnimations(nextPage);
+  if (has('[data-text-scroller-wrap]') && window.initTextScroller) window.initTextScroller(nextPage);
+  if (has('[data-rotate-collection-target]') && window.initRotateScrollDirection) window.initRotateScrollDirection(nextPage);
+  if (has('[data-footer-parallax]') && window.initFooterParallax) window.initFooterParallax(nextPage);
+  if (has('[data-hero-item]') && window.animateHeroItems) window.animateHeroItems(nextPage);
+
+}
+
+// update the current nav item based on URL
+function updateCurrentNav() {
+  // 1. Get current URL path
+  const currentPath = window.location.pathname;
+  console.log('[updateCurrentNav] currentPath:', currentPath);
+
+  // 2. Remove w--current from all links
+  document.querySelectorAll('.mega-nav__bar-link').forEach(link => {
+    link.classList.remove('w--current');
+  });
+
+  // 3. Add w--current to the link matching the current URL
+  document.querySelectorAll('.mega-nav__bar-link').forEach(link => {
+    if (link.getAttribute('href') === currentPath) {
+      link.classList.add('w--current');
+    }
+  });
+}
