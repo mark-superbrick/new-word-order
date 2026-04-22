@@ -1,0 +1,15 @@
+
+[data-hero-item] {
+  opacity: 0;
+  /* filter: blur(40px); */
+  /* transform: translateY(100%); */
+}
+
+.is-bouncing {
+  animation: bounce 1s ease-in infinite alternate;
+}
+
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(1rem); }
+}
