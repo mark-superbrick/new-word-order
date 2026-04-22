@@ -1,0 +1,12 @@
+
+/* alternating directions of primary cards */
+.primary_card_list .primary_card_wrap:nth-child(even) .primary_card_visual {
+		order: -1;
+}
+/* visual is on top of primary cards on mobile */
+@media screen and (max-width: 991px) {
+	.primary_card_visual {
+		order: -1;
+	}
+}
+
