@@ -1,0 +1,15 @@
+
+@media screen and (min-width: 992px) {
+
+  .secondary_card_list {
+    margin-top: 8rem;
+  }
+  /* alternating top margin of secondary cards */
+  .secondary_card_list .secondary_card_wrap:nth-child(even) {
+      margin-top: -25%;
+  }
+}
+.secondary_card_title {
+  max-width: 30ch;
+}
+
