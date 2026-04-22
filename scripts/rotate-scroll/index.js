@@ -2,8 +2,8 @@
 
   const host = window.location.host;
   const mainDomain = host.split('.')[1];
-  let DEBUG = mainDomain == 'webflow';
-  // let DEBUG = false;
+  // let DEBUG = mainDomain == 'webflow';
+  let DEBUG = false;
   const ENABLE = true;
     
   // Utility to wait for GSAP if not loaded yet

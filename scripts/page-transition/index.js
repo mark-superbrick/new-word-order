@@ -3,6 +3,9 @@
 // OSMO PAGE TRANSITION BOILERPLATE
 // -----------------------------------------
 
+// let DEBUG = mainDomain == 'webflow';
+let DEBUG = false;
+
 gsap.registerPlugin(CustomEase);
 
 history.scrollRestoration = "manual";
@@ -53,7 +56,7 @@ function initAfterEnterFunctions(next) {
 
   // Page-specific animations that should run on every page can be called here, or within their own init functions that are called here. For example:
   initPageAnimations();
-  
+
   // update the current nav item based on URL
   updateCurrentNav();
 }
@@ -201,7 +204,7 @@ barba.hooks.afterEnter(data => {
 });
 
 barba.init({
-  debug: true, // Set to 'false' in production
+  debug: DEBUG, // Set to 'false' in production
   timeout: 7000,
   preventRunning: true,
   transitions: [
