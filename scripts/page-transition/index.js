@@ -346,6 +346,7 @@ function initPageAnimations() {
   if (has('[data-rotate-collection-target]') && window.initRotateScrollDirection) window.initRotateScrollDirection(nextPage);
   if (has('[data-footer-parallax]') && window.initFooterParallax) window.initFooterParallax(nextPage);
   if (has('[data-hero-item]') && window.animateHeroItems) window.animateHeroItems(nextPage);
+  if (has('[data-featured-image]') && window.animateFeaturedImage) window.animateFeaturedImage(nextPage);
 
 }
 

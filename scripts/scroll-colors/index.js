@@ -87,6 +87,10 @@
 
       const sections = gsap.utils.toArray('[data-bg-color], [data-text-color]');
 
+      sections.forEach(section => {
+        if (section.dataset.bgColor) section.style.backgroundColor = 'transparent';
+      });
+
       sections.forEach((section, index) => {
         const bgColor   = resolveColor(section.dataset.bgColor);
         const textColor = resolveColor(section.dataset.textColor);
