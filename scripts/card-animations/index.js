@@ -42,7 +42,9 @@
 
       cards.forEach(function (card) {
         var image = card.querySelector("[data-card-visual] .image_component");
+        var video = card.querySelector("[data-card-visual] .w-video");
         if (image) gsap.set(image, { scale: 1.2 });
+        if (video) gsap.set(video, { scale: 1.2 });
       });
 
       ScrollTrigger.batch(cards, {
@@ -60,9 +62,9 @@
           });
           batch.forEach(function (card) {
             var image = card.querySelector("[data-card-visual] .image_component");
-            if (image) {
-              gsap.to(image, { scale: 1, duration: 1.5, ease: "power3.out", overwrite: true });
-            }
+            var video = card.querySelector("[data-card-visual] .w-video");
+            if (image) gsap.to(image, { scale: 1, duration: 1.5, ease: "power3.out", overwrite: true });
+            if (video) gsap.to(video, { scale: 1, duration: 1.5, ease: "power3.out", overwrite: true });
           });
         },
       });
@@ -72,24 +74,20 @@
         var image = card.querySelector("[data-card-visual] .image_component");
         var arrow = card.querySelector("[data-card-icon]");
 
+        var video = card.querySelector("[data-card-visual] .w-video");
+
         card.addEventListener("mouseenter", function () {
           // gsap.to(card, { y: -6, duration: 0.35, ease: "power2.out", overwrite: "auto" });
-          if (image) {
-            gsap.to(image, { scale: 1.04, duration: 0.45, ease: "power2.out", overwrite: "auto" });
-          }
-          if (arrow) {
-            gsap.to(arrow, { x: 4, duration: 0.3, ease: "power2.out", overwrite: "auto" });
-          }
+          if (image) gsap.to(image, { scale: 1.04, duration: 0.45, ease: "power2.out", overwrite: "auto" });
+          if (video) gsap.to(video, { scale: 1.04, duration: 0.45, ease: "power2.out", overwrite: "auto" });
+          if (arrow) gsap.to(arrow, { x: 4, duration: 0.3, ease: "power2.out", overwrite: "auto" });
         });
 
         card.addEventListener("mouseleave", function () {
           // gsap.to(card, { y: 0, duration: 0.4, ease: "power2.inOut", overwrite: "auto" });
-          if (image) {
-            gsap.to(image, { scale: 1, duration: 0.45, ease: "power2.inOut", overwrite: "auto" });
-          }
-          if (arrow) {
-            gsap.to(arrow, { x: 0, duration: 0.3, ease: "power2.inOut", overwrite: "auto" });
-          }
+          if (image) gsap.to(image, { scale: 1, duration: 0.45, ease: "power2.inOut", overwrite: "auto" });
+          if (video) gsap.to(video, { scale: 1, duration: 0.45, ease: "power2.inOut", overwrite: "auto" });
+          if (arrow) gsap.to(arrow, { x: 0, duration: 0.3, ease: "power2.inOut", overwrite: "auto" });
         });
       });
 
