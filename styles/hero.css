@@ -1,8 +1,10 @@
-
-[data-hero-item] {
+[data-prevent-flicker] {
   opacity: 0;
   /* filter: blur(40px); */
   /* transform: translateY(100%); */
+}
+.wf-design-mode [data-prevent-flicker] {
+  opacity: 1;
 }
 
 .is-bouncing {
