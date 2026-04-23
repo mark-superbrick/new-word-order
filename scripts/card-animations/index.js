@@ -40,6 +40,11 @@
       // --- Scroll-in: slide up on enter, stay ---
       gsap.set(cards, { filter: blurFull, y: 40, opacity: 0 });
 
+      cards.forEach(function (card) {
+        var image = card.querySelector("[data-card-visual] .image_component");
+        if (image) gsap.set(image, { scale: 1.2 });
+      });
+
       ScrollTrigger.batch(cards, {
         start: "top 90%",
         once: true,
@@ -52,6 +57,12 @@
             ease: "power3.out",
             stagger: 0.1,
             overwrite: true,
+          });
+          batch.forEach(function (card) {
+            var image = card.querySelector("[data-card-visual] .image_component");
+            if (image) {
+              gsap.to(image, { scale: 1, duration: 1.5, ease: "power3.out", overwrite: true });
+            }
           });
         },
       });
