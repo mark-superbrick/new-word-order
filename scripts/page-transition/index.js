@@ -347,6 +347,7 @@ function initPageAnimations() {
   if (has('[data-footer-parallax]') && window.initFooterParallax) window.initFooterParallax(nextPage);
   if (has('[data-hero-item]') && window.animateHeroItems) window.animateHeroItems(nextPage);
   if (has('[data-featured-image]') && window.animateFeaturedImage) window.animateFeaturedImage(nextPage);
+  if (has('.marquee-swiper') && window.initMarqueeSwiperSlider) window.initMarqueeSwiperSlider(nextPage);
 
 }
 
