@@ -63,7 +63,7 @@
             modifier: 1,
             slideShadows: true,
           },
-          spaceBetween: 40,
+          spaceBetween: 60,
           loop: true,
           duration: 600,
           autoplay: {
