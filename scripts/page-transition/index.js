@@ -348,6 +348,8 @@ function initPageAnimations() {
   if (has('[data-hero-item]') && window.animateHeroItems) window.animateHeroItems(nextPage);
   if (has('[data-featured-image]') && window.animateFeaturedImage) window.animateFeaturedImage(nextPage);
   if (has('.marquee-swiper') && window.initMarqueeSwiperSlider) window.initMarqueeSwiperSlider(nextPage);
+  if (has('.purpose_hero_wrap') && window.initPurposeHeroAnimations) window.initPurposeHeroAnimations(nextPage);
+  if (has('.purpose_hero_alt_wrap') && window.initPurposeHeroAltAnimations) window.initPurposeHeroAltAnimations(nextPage);
   if (has('[data-sticky-steps-init]') && window.initStickyStepsBasic) window.initStickyStepsBasic(nextPage);
 
 }
