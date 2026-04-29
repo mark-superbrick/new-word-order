@@ -20,4 +20,22 @@
   [data-sticky-steps-item-status="active"] .sticky-steps__text {
     opacity: 1;
   }
+
+
+  [data-sticky-steps-item-reverse] {
+    display: flex;
+    flex-direction: row-reverse;
+  }
+  [data-sticky-steps-item-reverse] .sticky-steps__text {
+    padding-right: 0;
+    padding-left: 6em;
+  }
+  [data-sticky-steps-item-reverse] .sticky-steps__media {
+    padding-left: 0;
+    padding-right: 3em;
+
+    right: auto;
+    left: 0;
+  }
+  
 }
