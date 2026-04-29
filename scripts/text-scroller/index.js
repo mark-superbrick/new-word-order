@@ -69,8 +69,23 @@
           }
         });
 
+        // Collect visuals — counter-animated so they stay at y:0 of the wrapper
+        const visuals = Array.from(items).map(item => item.querySelector('[data-text-scroller-visual]'));
+        const hasVisuals = visuals.some(v => v !== null);
+        if (DEBUG) console.log('[text-scroller] visuals:', visuals.map((v, i) => `item[${i}]: ${v ? v.tagName + '.' + v.className : 'none'}`));
+
         // Set initial states: offscreen below and invisible for all except first
         gsap.set(items, { yPercent: 100, opacity: 0, filter: blurFull, overwrite: true });
+
+        // Counter-position visuals to wrapper y:0 while their parent items are at yPercent:100
+        if (hasVisuals) {
+          visuals.forEach((visual, i) => {
+            if (!visual) return;
+            if (i === 0 && items.length > 1) return; // item[0] already at yPercent:0
+            if (DEBUG) console.log(`[text-scroller] setting visual[${i}] y:`, -window.innerHeight);
+            gsap.set(visual, { y: -window.innerHeight });
+          });
+        }
 
         // Compute total scroll distance: one viewport per slide.
         // Add an extra viewport's worth of scroll so the section remains pinned
@@ -142,9 +157,13 @@
           const outTime = i + 0.6; // when to start fading out
 
 
+          const visual = hasVisuals ? visuals[i] : null;
+          if (DEBUG && visual) console.log(`[text-scroller] wiring visual[${i}]`, visual);
+
           // Skip enter animation for first item (no "in" tween), unless it's also the only item
           if (i !== 0 || isOnlyItem) {
             tl.to(item, { yPercent: 0, opacity: 1, filter: 'blur(0px)', duration: 0.6, ease: 'power3.out' }, inTime);
+            if (visual) tl.to(visual, { y: 0, duration: 0.6, ease: 'power3.out' }, inTime);
           } else {
             // make sure timeline keeps the first item visible at this point
             tl.set(item, { yPercent: 0, opacity: 1, filter: 'blur(0px)' }, inTime);
@@ -153,6 +172,7 @@
           // Skip leave animation for last item (no "out" tween), unless it's also the only item
           if (i !== lastIndex) {
             tl.to(item, { yPercent: -20, opacity: 0, filter: blurFull, duration: 0.6, ease: 'power3.in' }, outTime);
+            if (visual) tl.to(visual, { y: () => window.innerHeight * 0.2, duration: 0.6, ease: 'power3.in' }, outTime);
           } else {
             // ensure the last item remains visible through the end of its segment
             tl.set(item, { yPercent: 0, opacity: 1, filter: 'blur(0px)' }, outTime);
