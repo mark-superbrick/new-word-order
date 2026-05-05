@@ -1,11 +1,12 @@
 /* Filter Button */
 .filter-btn {
-  transition: color 0.6s cubic-bezier(0.625, 0.05, 0, 1), background-color 0.6s cubic-bezier(0.625, 0.05, 0, 1);
+  transition: color 0.6s cubic-bezier(0.625, 0.05, 0, 1), border-color 0.6s cubic-bezier(0.625, 0.05, 0, 1), ;
+  border-bottom: 3px solid transparent;
 }
-
+.filter-btn.is-list-active,
 .filter-btn[data-filter-status="active"] {
-  background-color: #131313;
-  color: red;
+  background-color: transparent;
+  border-bottom: 3px solid currentcolor;
 }
 
 /* Reset Button */

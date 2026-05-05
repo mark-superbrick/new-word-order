@@ -32,44 +32,55 @@
         // console.log("[card-animations] initialized on 0 element(s)");
         return;
       }
+
+      // Separate cards whose parent list has data-effect-disabled
+      var scrollCards = [], disabledCards = [];
+      cards.forEach(function(card) {
+        var list = card.closest('[data-effect-disabled]');
+        if (list) disabledCards.push(card);
+        else scrollCards.push(card);
+      });
+
       // Disable blur on tablet and smaller — blur is expensive to paint and visually distracting
       // at smaller sizes. Webflow tablet breakpoint is 991px.
       const reduceBlur = window.matchMedia('(max-width: 991px)').matches;
-      const blurFull   = reduceBlur ? 'blur(0px)' : 'blur(20px)'; 
+      const blurFull   = reduceBlur ? 'blur(0px)' : 'blur(20px)';
 
-      // --- Scroll-in: slide up on enter, stay ---
-      gsap.set(cards, { filter: blurFull, y: 40, opacity: 0 });
+      // --- Scroll-in: slide up on enter, stay (skipped for disabled cards) ---
+      if (scrollCards.length) {
+        gsap.set(scrollCards, { filter: blurFull, y: 40, opacity: 0 });
 
-      cards.forEach(function (card) {
-        var image = card.querySelector("[data-card-visual] .image_component");
-        var video = card.querySelector("[data-card-visual] .w-video");
-        if (image) gsap.set(image, { scale: 1.2 });
-        if (video) gsap.set(video, { scale: 1.2 });
-      });
+        scrollCards.forEach(function (card) {
+          var image = card.querySelector("[data-card-visual] .image_component");
+          var video = card.querySelector("[data-card-visual] .w-video");
+          if (image) gsap.set(image, { scale: 1.2 });
+          if (video) gsap.set(video, { scale: 1.2 });
+        });
 
-      ScrollTrigger.batch(cards, {
-        start: "top 90%",
-        once: true,
-        onEnter: function (batch) {
-          gsap.to(batch, {
-            y: 0,
-            opacity: 1,
-            filter: 'blur(0px)',
-            duration: 1.5,
-            ease: "power3.out",
-            stagger: 0.1,
-            overwrite: true,
-          });
-          batch.forEach(function (card) {
-            var image = card.querySelector("[data-card-visual] .image_component");
-            var video = card.querySelector("[data-card-visual] .w-video");
-            if (image) gsap.to(image, { scale: 1, duration: 1.5, ease: "power3.out", overwrite: true });
-            if (video) gsap.to(video, { scale: 1, duration: 1.5, ease: "power3.out", overwrite: true });
-          });
-        },
-      });
+        ScrollTrigger.batch(scrollCards, {
+          start: "top 90%",
+          once: true,
+          onEnter: function (batch) {
+            gsap.to(batch, {
+              y: 0,
+              opacity: 1,
+              filter: 'blur(0px)',
+              duration: 1.5,
+              ease: "power3.out",
+              stagger: 0.1,
+              overwrite: true,
+            });
+            batch.forEach(function (card) {
+              var image = card.querySelector("[data-card-visual] .image_component");
+              var video = card.querySelector("[data-card-visual] .w-video");
+              if (image) gsap.to(image, { scale: 1, duration: 1.5, ease: "power3.out", overwrite: true });
+              if (video) gsap.to(video, { scale: 1, duration: 1.5, ease: "power3.out", overwrite: true });
+            });
+          },
+        });
+      }
 
-      // --- Hover effects ---
+      // --- Hover effects (all cards, including disabled-scroll ones) ---
       cards.forEach(function (card) {
         var image = card.querySelector("[data-card-visual] .image_component");
         var arrow = card.querySelector("[data-card-icon]");
