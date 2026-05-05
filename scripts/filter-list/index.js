@@ -1,9 +1,10 @@
+/** 
 (function() {
 
   const host = window.location.host;
   const mainDomain = host.split('.')[1];
-  // let DEBUG = mainDomain == 'webflow';
-  let DEBUG = false;
+  let DEBUG = mainDomain == 'webflow';
+  // let DEBUG = false;
   const ENABLE = true;
     
   // Utility to wait for GSAP if not loaded yet
@@ -27,15 +28,14 @@
 
       var root = container || document;
       
-      var cards = root.querySelectorAll("[data-card]");
-      if (!cards.length) {
-        // console.log("[card-animations] initialized on 0 element(s)");
+      const groups = [...document.querySelectorAll('[data-filter-group]')];
+      if (!groups.length) {
         return;
       }
+      console.log(`[filter-list] initialized on ${groups.length} group(s)`);
       
 
       const transitionDelay = 300;
-      const groups = [...document.querySelectorAll('[data-filter-group]')];
 
       groups.forEach(group => {
         const targetMatch = (group.getAttribute('data-filter-target-match') || 'multi').trim().toLowerCase(); // 'single' | 'multi'
@@ -179,15 +179,11 @@
 
 
 
-  // Run on initial load
-  if(document.readyState === 'complete' || document.readyState === 'interactive'){
-    // small timeout to let other initialisation complete
-    setTimeout(function(){ initMutliFilterSetupMultiMatch(document); }, 60);
-  } else {
-    document.addEventListener('DOMContentLoaded', function(){
-      setTimeout(function(){ initMutliFilterSetupMultiMatch(document); }, 60);
-    });
-  }
+  // Wait for Finsweet Attributes list/nest to finish before initialising
+  window.fsAttributes = window.fsAttributes || [];
+  window.fsAttributes.push(['list', function() {
+    initMutliFilterSetupMultiMatch(document);
+  }]);
 
   // Hook into Barba if present so animations run after page enter
   function attachBarbaHook(){
@@ -212,3 +208,4 @@
   }
 
 })();
+*/
