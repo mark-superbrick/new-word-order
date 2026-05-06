@@ -1,0 +1,56 @@
+/* Horizontal scroll for filter lists with edge gradients that hide at scroll ends */
+
+[data-filter-scroll]::-webkit-scrollbar { display: none; }
+
+/* Ensure each filter button stays on a single line and never wraps */
+[data-filter-scroll] .filter-btn { flex: 0 0 auto; white-space: nowrap; }
+
+/* Edge fading gradients */
+[data-filter-list-wrap]::before,
+[data-filter-list-wrap]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 16rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 220ms ease;
+  z-index: 2;
+}
+
+/* Default gradient colours assume a dark background. You can override with setting --filter-fade-start on a parent. */
+[data-filter-list-wrap] { --filter-fade-start: rgba(0,0,0,1); --filter-fade-end: rgba(0,0,0,0); }
+
+[data-filter-list-wrap]::before { left: 0; background: linear-gradient(90deg, var(--filter-fade-start), var(--filter-fade-end)); }
+[data-filter-list-wrap]::after  { right: 0; background: linear-gradient(270deg, var(--filter-fade-start), var(--filter-fade-end)); }
+
+/* When scroll is not at the left or right edge, show the respective gradient */
+[data-filter-list-wrap].show-left::before { opacity: 1; }
+[data-filter-list-wrap].show-right::after { opacity: 1; }
+
+/* Light-theme override when the filter container is on a light background */
+[data-filter-list-wrap][data-theme="light"] { --filter-fade-start: rgba(255,255,255,1); --filter-fade-end: rgba(255,255,255,0); }
+
+/* Make sure interactive focus states remain visible inside the scroll area */
+[data-filter-scroll] .w-checkbox:focus-within { z-index: 3; }
+
+/* Accessibility: allow keyboard users to scroll via arrows */
+[data-filter-scroll]:focus { outline: none; }
+
+@media screen and (min-width: 992px) {
+  .filter_scroll_item { 
+    margin-right: 0; 
+  }
+  [data-filter-list-wrap] { position: relative; }
+  [data-filter-list-wrap] [data-filter-scroll-wrap] { position: relative; }
+  [data-filter-scroll] {
+    display: flex;
+    gap: 3rem;
+    align-items: center;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    /* padding: 0.5rem 0.5rem; */
+  }
+}
