@@ -54,7 +54,7 @@
       mainWrapper.prepend(bgLayer);
 
       const rootStyles  = getComputedStyle(document.documentElement);
-
+      const duration    = 0.4; // seconds
       const colorMap = {
         'offwhite':  '--base-color--offwhite',
         'black':     '--base-color-neutral--black',
@@ -107,10 +107,10 @@
         // Pre-build tween vars at setup time — avoids object allocation inside scroll callbacks.
         // backgroundColor goes to bgLayer (fixed overlay); color goes to mainWrapper (text).
         // overwrite: 'auto' kills any in-flight tween on the same property before starting the new one.
-        const enterBgVars    = bgColor      ? { duration: 0.6, overwrite: 'auto', backgroundColor: bgColor }      : null;
-        const enterTextVars  = textColor    ? { duration: 0.6, overwrite: 'auto', color: textColor }               : null;
-        const leaveBgVars    = prevBgColor  ? { duration: 0.6, overwrite: 'auto', backgroundColor: prevBgColor }  : null;
-        const leaveTextVars  = prevTextColor ? { duration: 0.6, overwrite: 'auto', color: prevTextColor }          : null;
+        const enterBgVars    = bgColor      ? { duration: duration, overwrite: true, ease: 'linear', backgroundColor: bgColor }      : null;
+        const enterTextVars  = textColor    ? { duration: duration, overwrite: true, ease: 'linear', color: textColor }               : null;
+        const leaveBgVars    = prevBgColor  ? { duration: duration, overwrite: true, ease: 'linear', backgroundColor: prevBgColor }  : null;
+        const leaveTextVars  = prevTextColor ? { duration: duration, overwrite: true, ease: 'linear', color: prevTextColor }          : null;
 
         ScrollTrigger.create({
           trigger: section,
