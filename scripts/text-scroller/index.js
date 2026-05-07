@@ -42,10 +42,6 @@
       wrappers.forEach((wrapper, index) => {
         const items = wrapper.querySelectorAll('[data-text-scroller-item]');
         if (!items || items.length === 0) return;
-          
-        // wrapper.style.height = "100vh";
-        // wrapper.style.overflow = "hidden";   // clip absolute children to wrapper bounds
-        // wrapper.style.position = "relative"; // ensure absolute children are relative to wrapper
 
         // Ensure the wrapper is positioned for absolute children and pinning
         // if (getComputedStyle(wrapper).position === 'static') {
@@ -59,7 +55,7 @@
         // Give each slide a z-index so incoming slides appear above previous
         items.forEach((el, idx) => {
           el.style.position = "absolute";
-          el.style.height = "100svh";
+          el.style.height = "100vh";
           el.style.opacity = 0;
           el.style.zIndex = idx + 1;
           // will-change set only on items that will actually animate (not item 0 which starts visible)
@@ -90,18 +86,18 @@
         // Compute total scroll distance: one viewport per slide.
         // Add an extra viewport's worth of scroll so the section remains pinned
         // until the very last item finishes its exit animation and leaves with the section.
-        const totalScroll = (items.length + 1) * window.innerHeight;
+        const totalItems = items.length
 
         // Dirty-check: skip classList writes when segment hasn't changed
         let lastSegment = -1;
-        const isOnlyItem = items.length === 1;
+        const isOnlyItem = totalItems === 1;
 
         // Build a timeline where each slide animates in (from bottom) and then out (fade up)
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: wrapper,
-            start: 'bottom bottom',
-            end: () => `+=${totalScroll}`,
+            start: 'top top',
+            end: () => `+=${totalItems * window.innerHeight}`, 
             scrub: true,
             // Pin the wrapper for the full timeline so the section stays fixed
             // until the last item has left with it.
@@ -114,8 +110,8 @@
             id: 'text-' + index,
             onUpdate(self) {
               // Set an "is-active" class for the currently scrolled segment
-              const progress = self.progress || 0;
-              const segment = Math.min(items.length - 1, Math.floor(progress * items.length));
+              const progress = Math.max(0, Math.min(1, self.progress || 0));
+              const segment = Math.min(totalItems - 1, Math.floor(progress * totalItems));
               if (segment === lastSegment) return;
               lastSegment = segment;
               items.forEach((el, i) => el.classList.toggle('is-active', i === segment));
