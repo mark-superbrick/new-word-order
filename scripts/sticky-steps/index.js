@@ -34,40 +34,30 @@
         const items = [...contain.querySelectorAll("[data-sticky-steps-item]")];
         if (!items.length) return;
 
-        function updateSteps() {
-          const viewportCenter = window.innerHeight / 2;
-
-          let closestIndex = 0;
-          let closestDistance = Infinity;
-
-          items.forEach((item, index) => {
-            const anchor = item.querySelector("[data-sticky-steps-anchor]");
-            if (!anchor) return;
-
-            const rect = anchor.getBoundingClientRect();
-            const anchorCenter = rect.top + rect.height / 2;
-            const distance = Math.abs(viewportCenter - anchorCenter);
-
-            if (distance < closestDistance) {
-              closestDistance = distance;
-              closestIndex = index;
-            }
-          });
-
+        function setActiveStep(activeIndex) {
           items.forEach((item, index) => {
             let status = "active";
 
-            if (index < closestIndex) status = "before";
-            if (index > closestIndex) status = "after";
+            if (index < activeIndex) status = "before";
+            if (index > activeIndex) status = "after";
 
             item.setAttribute("data-sticky-steps-item-status", status);
           });
         }
 
-        window.addEventListener("scroll", updateSteps);
-        window.addEventListener("resize", updateSteps);
+        items.forEach((item, index) => {
+          const anchor = item.querySelector("[data-sticky-steps-anchor]");
+          if (!anchor) return;
 
-        requestAnimationFrame(updateSteps);
+          ScrollTrigger.create({
+            trigger: anchor,
+            start: "top center",
+            onEnter: () => setActiveStep(index),
+            onEnterBack: () => setActiveStep(index)
+          });
+        });
+
+        setActiveStep(0);
       });
       
     });

@@ -21,7 +21,7 @@
     opacity: 1;
   }
 
-
+  /* alt layout */
   [data-sticky-steps-item-reverse] {
     display: flex;
     flex-direction: row-reverse;
