@@ -55,7 +55,7 @@
         // Give each slide a z-index so incoming slides appear above previous
         items.forEach((el, idx) => {
           el.style.position = "absolute";
-          el.style.height = "100vh";
+          // el.style.height = "100vh";
           el.style.opacity = 0;
           el.style.zIndex = idx + 1;
           // will-change set only on items that will actually animate (not item 0 which starts visible)
