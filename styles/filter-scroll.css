@@ -38,6 +38,39 @@
 /* Accessibility: allow keyboard users to scroll via arrows */
 [data-filter-scroll]:focus { outline: none; }
 
+/* Drag to scroll */
+[data-filter-scroll] { cursor: grab; user-select: none; }
+[data-filter-scroll].is-dragging { cursor: grabbing; scroll-behavior: auto; }
+
+/* Drag hint overlay */
+[data-filter-scroll-hint] {
+  pointer-events: none;
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+  font-size: 1rem;
+  color: #fff;
+  text-shadow: 0 2px 8px #000, 0 0 2px #000;
+  opacity: 0;
+  transition: opacity 0.3s;
+  white-space: nowrap;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+[data-filter-scroll-hint].is-visible { opacity: 1; }
+[data-filter-scroll-hint] .hint-arrow {
+  display: inline-block;
+  animation: filter-scroll-nudge 1s ease-in-out infinite alternate;
+}
+@keyframes filter-scroll-nudge {
+  from { transform: translateX(-4px); }
+  to   { transform: translateX(4px); }
+}
+
 @media screen and (min-width: 992px) {
   .filter_scroll_item { 
     margin-right: 0; 

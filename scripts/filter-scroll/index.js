@@ -6,7 +6,6 @@
   // let DEBUG = mainDomain == 'webflow';
   let DEBUG = false;
   const ENABLE = true;
-    
 
   function initFilterScroll(container) {
     const instances = [];
@@ -52,7 +51,81 @@
         // Allow focus so keyboard users can hit arrow keys
         scroller.tabIndex = scroller.tabIndex || 0;
 
-        // Initialize after a tick to allow layout
+        // --- Drag to scroll ---
+        var dragStartX = 0;
+        var dragScrollLeft = 0;
+        var isDragging = false;
+        var dragMoved = false;
+        var DRAG_THRESHOLD = 1;
+
+        scroller.addEventListener('pointerdown', function (e) {
+          if (e.button !== 0) return;
+          isDragging = true;
+          dragMoved = false;
+          dragStartX = e.clientX;
+          dragScrollLeft = scroller.scrollLeft;
+          scroller.setPointerCapture(e.pointerId);
+          scroller.classList.add('is-dragging');
+          // Disable smooth scroll during drag for 1:1 tracking
+          scroller.style.scrollBehavior = 'auto';
+          hideHint();
+        });
+
+        scroller.addEventListener('pointermove', function (e) {
+          if (!isDragging) return;
+          var dx = e.clientX - dragStartX;
+          if (!dragMoved && Math.abs(dx) > DRAG_THRESHOLD) dragMoved = true;
+          if (!dragMoved) return;
+          scroller.scrollLeft = dragScrollLeft - dx;
+          update();
+        });
+
+        function endDrag(e) {
+          if (!isDragging) return;
+          isDragging = false;
+          scroller.classList.remove('is-dragging');
+          scroller.style.scrollBehavior = '';
+          scroller.releasePointerCapture(e.pointerId);
+        }
+
+        scroller.addEventListener('pointerup', endDrag);
+        scroller.addEventListener('pointercancel', endDrag);
+
+        // Swallow click if the pointer actually moved (prevents filter button misfires)
+        scroller.addEventListener('click', function (e) {
+          if (dragMoved) {
+            e.stopPropagation();
+            e.preventDefault();
+            dragMoved = false;
+          }
+        }, true);
+
+        // --- Scroll hint ---
+        var hint = document.createElement('div');
+        hint.setAttribute('data-filter-scroll-hint', '');
+        var arrowL = document.createElement('span'); arrowL.className = 'hint-arrow'; arrowL.textContent = '←';
+        var arrowR = document.createElement('span'); arrowR.className = 'hint-arrow'; arrowR.textContent = '→';
+        hint.appendChild(arrowL);
+        hint.appendChild(document.createTextNode(' Drag / Scroll '));
+        hint.appendChild(arrowR);
+        wrap.style.position = wrap.style.position || 'relative';
+        wrap.appendChild(hint);
+
+        function showHint() {
+          var maxScroll = scroller.scrollWidth - scroller.clientWidth;
+          if (maxScroll > DRAG_THRESHOLD) hint.classList.add('is-visible');
+        }
+
+        function hideHint() {
+          hint.classList.remove('is-visible');
+        }
+
+        requestAnimationFrame(function () {
+          showHint();
+          scroller.addEventListener('scroll', hideHint, { once: true, passive: true });
+        });
+
+        // Initialize gradient state after layout
         requestAnimationFrame(update);
       });
     // });
