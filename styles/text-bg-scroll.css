@@ -1,0 +1,16 @@
+
+.text_bg_scroll_item.is-active {
+  opacity: 1;
+  pointer-events: auto;
+  /* remove blur when active */
+  /* filter: blur(0); */
+  /* transition: opacity 0.6s cubic-bezier(0.625, 0.05, 0, 1), filter 0.6s cubic-bezier(0.625, 0.05, 0, 1); */
+}
+
+.wf-design-mode .text_bg_scroll_item {
+  opacity: 1;
+  /* filter: blur(0px); */
+  height: auto;
+  position: relative;
+  pointer-events: auto;
+}
