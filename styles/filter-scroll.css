@@ -22,8 +22,23 @@
 /* Default gradient colours assume a dark background. You can override with setting --filter-fade-start on a parent. */
 [data-filter-list-wrap] { --filter-fade-start: rgba(0,0,0,1); --filter-fade-end: rgba(0,0,0,0); }
 
-[data-filter-list-wrap]::before { left: 0; background: linear-gradient(90deg, var(--filter-fade-start), var(--filter-fade-end)); }
-[data-filter-list-wrap]::after  { right: 0; background: linear-gradient(270deg, var(--filter-fade-start), var(--filter-fade-end)); }
+[data-filter-list-wrap]::before { 
+  left: -4px; 
+  background: linear-gradient(90deg, var(--filter-fade-start), var(--filter-fade-end)); 
+  content: '←';
+  animation: filter-scroll-nudge 1s ease-in-out infinite alternate;
+  display: flex;
+  align-items: center;
+  justify-content: start;}
+[data-filter-list-wrap]::after  { 
+  right: -4px; 
+  background: linear-gradient(270deg, var(--filter-fade-start), var(--filter-fade-end)); 
+  content: '→';
+  animation: filter-scroll-nudge 1s ease-in-out infinite alternate;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+}
 
 /* When scroll is not at the left or right edge, show the respective gradient */
 [data-filter-list-wrap].show-left::before { opacity: 1; }
@@ -51,6 +66,7 @@
   transform: translate(-50%, 50%);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.25em;
   font-size: 1rem;
   color: #fff;
@@ -60,6 +76,9 @@
   white-space: nowrap;
   text-transform: uppercase;
   font-weight: bold;
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(270deg, var(--filter-fade-end), var(--filter-fade-start), var(--filter-fade-end));
 }
 [data-filter-scroll-hint].is-visible { opacity: 1; }
 [data-filter-scroll-hint] .hint-arrow {

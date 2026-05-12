@@ -56,42 +56,47 @@
         var dragScrollLeft = 0;
         var isDragging = false;
         var dragMoved = false;
-        var DRAG_THRESHOLD = 1;
+        var pendingPointerId = null;
+        var DRAG_THRESHOLD = 5;
 
         scroller.addEventListener('pointerdown', function (e) {
           if (e.button !== 0) return;
-          isDragging = true;
           dragMoved = false;
           dragStartX = e.clientX;
           dragScrollLeft = scroller.scrollLeft;
-          scroller.setPointerCapture(e.pointerId);
-          scroller.classList.add('is-dragging');
-          // Disable smooth scroll during drag for 1:1 tracking
+          pendingPointerId = e.pointerId;
           scroller.style.scrollBehavior = 'auto';
           hideHint();
         });
 
         scroller.addEventListener('pointermove', function (e) {
-          if (!isDragging) return;
+          if (pendingPointerId === null || e.pointerId !== pendingPointerId) return;
           var dx = e.clientX - dragStartX;
-          if (!dragMoved && Math.abs(dx) > DRAG_THRESHOLD) dragMoved = true;
-          if (!dragMoved) return;
+          if (!isDragging && Math.abs(dx) > DRAG_THRESHOLD) {
+            // Only capture the pointer once we're sure this is a drag,
+            // so clicks on checkboxes/buttons still fire normally.
+            isDragging = true;
+            dragMoved = true;
+            scroller.setPointerCapture(e.pointerId);
+            scroller.classList.add('is-dragging');
+          }
+          if (!isDragging) return;
           scroller.scrollLeft = dragScrollLeft - dx;
           update();
         });
 
-        function endDrag(e) {
-          if (!isDragging) return;
+        function endDrag() {
+          if (!isDragging && pendingPointerId === null) return;
           isDragging = false;
+          pendingPointerId = null;
           scroller.classList.remove('is-dragging');
           scroller.style.scrollBehavior = '';
-          scroller.releasePointerCapture(e.pointerId);
         }
 
         scroller.addEventListener('pointerup', endDrag);
         scroller.addEventListener('pointercancel', endDrag);
 
-        // Swallow click if the pointer actually moved (prevents filter button misfires)
+        // Swallow click if the pointer actually moved (prevents filter misfires)
         scroller.addEventListener('click', function (e) {
           if (dragMoved) {
             e.stopPropagation();
