@@ -342,7 +342,7 @@ function initBarbaNavUpdate(data) {
 function initPageAnimations() {
   if (has('.home_hero_wrap') && window.initHeroAnimations) window.initHeroAnimations(nextPage);
   if (has('.home_hero_alt_wrap') && window.initHeroAltAnimations) window.initHeroAltAnimations(nextPage);
-  if (has('[data-text-scroller-wrap]') && window.initTextScroller) window.initTextScroller(nextPage);
+  if (has('[data-text-scroll-wrap]') && window.initTextScroll) window.initTextScroll(nextPage);
   if (has('[data-rotate-collection-target]') && window.initRotateScrollDirection) window.initRotateScrollDirection(nextPage);
   if (has('[data-footer-parallax]') && window.initFooterParallax) window.initFooterParallax(nextPage);
   if (has('[data-hero-item]') && window.animateHeroItems) window.animateHeroItems(nextPage);

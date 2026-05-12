@@ -18,19 +18,19 @@
     }, 50);
   }
 
-  function initTextScroller(container) {
+  function initTextScroll(container) {
     whenGsapReady(function(){
       var gsap = window.gsap;
       var root = container || document;
 
-      const wrappers = root.querySelectorAll('[data-text-scroller-wrap]');
+      const wrappers = root.querySelectorAll('[data-text-scroll-wrap]');
       if (!wrappers || wrappers.length === 0 || !ENABLE) return;
 
       const reduceBlur = window.matchMedia('(max-width: 991px)').matches;
       const blurFull   = reduceBlur ? 'blur(0px)' : 'blur(40px)';
 
       wrappers.forEach((wrapper, wrapIndex) => {
-        const items = wrapper.querySelectorAll('[data-text-scroller-item]');
+        const items = wrapper.querySelectorAll('[data-text-scroll-item]');
         if (!items || items.length === 0) return;
 
         // All items start blurred and hidden
@@ -60,6 +60,6 @@
 
 
 
-  window.initTextScroller = initTextScroller;
+  window.initTextScroll = initTextScroll;
 
 })();
