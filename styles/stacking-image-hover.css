@@ -1,0 +1,42 @@
+
+/* .mwg_effect036 {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4vw;
+} */
+/* .mwg_effect036 p.sentence {
+    width: 80%;
+    font: 500 normal 5.6vw / 1 'Inter', sans-serif;
+    letter-spacing: -0.05em;
+    text-align: center;
+} */
+.mwg_effect036 strong {
+    text-decoration: underline;
+    text-decoration-thickness: 0.06em;
+    text-underline-offset: 0.1em;
+}
+.mwg_effect036 .medias {
+    pointer-events: none;
+}
+.mwg_effect036 .medias img {
+    width: 1px;
+    height: 1px;
+    top: 0;
+    left: 0;
+    position: absolute;
+    visibility: hidden;
+    pointer-events: none;
+}
+.mwg_effect036 img {
+    pointer-events: none;
+    width: 20vw;
+    height: 20vw;
+    display: block;
+    object-fit: contain;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
