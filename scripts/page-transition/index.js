@@ -352,8 +352,7 @@ function initPageAnimations() {
   if (has('.purpose_hero_wrap') && window.initPurposeHeroAnimations) window.initPurposeHeroAnimations(nextPage);
   if (has('.purpose_hero_alt_wrap') && window.initPurposeHeroAltAnimations) window.initPurposeHeroAltAnimations(nextPage);
   if (has('[data-sticky-steps-init]') && window.initStickyStepsBasic) window.initStickyStepsBasic(nextPage);
-  if (has('[data-filter-list-wrap]') && window.initFilterScroll) window.initFilterScroll(nextPage);
-
+  if (has('[data-filter-scroll]') && window.initFilterScroll) window.initFilterScroll(nextPage);
 }
 
 // update the current nav item based on URL
