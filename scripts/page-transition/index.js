@@ -58,8 +58,7 @@ function initAfterEnterFunctions(next) {
 
   // Re-initialize Finsweet Attributes v2 filter so it rescans the new Barba container
   if (has('[fs-list-element="list"]')) {
-    window.fsAttributes?.list?.init?.();
-    window.fsAttributes?.filter?.init?.();
+    window.fsAttributes?.filter?.();
   }
 
   // Page-specific animations that should run on every page can be called here, or within their own init functions that are called here. For example:
