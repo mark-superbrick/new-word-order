@@ -50,11 +50,24 @@ function initBeforeEnterFunctions(next) {
   
 }
 
+function reinitFinsweetAttributes() {
+  var existing = document.querySelector('script[src*="@finsweet"]');
+  if (!existing) return;
+  var src = existing.src;
+  existing.remove();
+  window.fsAttributes = [];
+  var script = document.createElement('script');
+  script.src = src;
+  document.head.appendChild(script);
+}
+
 function initAfterEnterFunctions(next) {
   nextPage = next || document;
 
   // Runs after the enter animation completes
   // if (has('[data-something]')) initSomething();
+
+  reinitFinsweetAttributes();
 
   // Page-specific animations that should run on every page can be called here, or within their own init functions that are called here. For example:
   initPageAnimations();
