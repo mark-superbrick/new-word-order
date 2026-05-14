@@ -3,8 +3,10 @@
 // OSMO PAGE TRANSITION BOILERPLATE
 // -----------------------------------------
 
-// let DEBUG = mainDomain == 'webflow';
-let DEBUG = false;
+const host = window.location.host;
+const mainDomain = host.split('.')[1];
+let DEBUG = mainDomain == 'webflow';
+// let DEBUG = false;
 
 gsap.registerPlugin(CustomEase);
 
@@ -364,7 +366,7 @@ function initPageAnimations() {
 function updateCurrentNav() {
   // 1. Get current URL path
   const currentPath = window.location.pathname;
-  console.log('[updateCurrentNav] currentPath:', currentPath);
+  if(DEBUG) console.log('[updateCurrentNav] currentPath:', currentPath);
 
   // 2. Remove w--current from all links
   document.querySelectorAll('.mega-nav__bar-link').forEach(link => {

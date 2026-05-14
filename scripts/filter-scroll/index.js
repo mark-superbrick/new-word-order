@@ -3,8 +3,8 @@
 
   const host = window.location.host;
   const mainDomain = host.split('.')[1];
-  // let DEBUG = mainDomain == 'webflow';
-  let DEBUG = false;
+  let DEBUG = mainDomain == 'webflow';
+  // let DEBUG = false;
   const ENABLE = true;
 
   function initFilterScroll(container) {
@@ -19,7 +19,7 @@
       if (!wraps.length || !ENABLE) {
         return;
       }
-      console.log(`[filter-scroll] initialized on ${wraps.length} wrap(s)`);
+      if (DEBUG) console.log(`[filter-scroll] initialized on ${wraps.length} wrap(s)`);
 
 
       wraps.forEach(wrap => {
