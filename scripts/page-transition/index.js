@@ -56,11 +56,6 @@ function initAfterEnterFunctions(next) {
   // Runs after the enter animation completes
   // if (has('[data-something]')) initSomething();
 
-  // Re-initialize Finsweet Attributes v2 filter so it rescans the new Barba container
-  if (has('[fs-list-element="list"]')) {
-    window.fsAttributes?.filter?.();
-  }
-
   // Page-specific animations that should run on every page can be called here, or within their own init functions that are called here. For example:
   initPageAnimations();
 
