@@ -50,25 +50,17 @@ function initBeforeEnterFunctions(next) {
   
 }
 
-function reinitFinsweetAttributes() {
-  var existing = document.querySelector('script[src*="@finsweet"]');
-  if (!existing) return;
-  var src = existing.src;
-  existing.remove();
-  window.fsAttributes = [];
-  var script = document.createElement('script');
-  script.type = 'module';
-  script.src = src + (src.includes('?') ? '&' : '?') + '_t=' + Date.now();
-  document.head.appendChild(script);
-}
-
 function initAfterEnterFunctions(next) {
   nextPage = next || document;
 
   // Runs after the enter animation completes
   // if (has('[data-something]')) initSomething();
 
-  reinitFinsweetAttributes();
+  // Re-initialize Finsweet Attributes v2 filter so it rescans the new Barba container
+  if (has('[fs-list-element="list"]')) {
+    window.fsAttributes?.list?.init?.();
+    window.fsAttributes?.filter?.init?.();
+  }
 
   // Page-specific animations that should run on every page can be called here, or within their own init functions that are called here. For example:
   initPageAnimations();
