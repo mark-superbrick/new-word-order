@@ -5,7 +5,7 @@
   // let DEBUG = mainDomain == 'webflow';
   let DEBUG = false;
   const ENABLE = true;
-    
+
   // Utility to wait for GSAP if not loaded yet
   function whenGsapReady(cb){
     if(window.gsap){
@@ -20,21 +20,29 @@
   }
 
   function initCheckSectionThemeScroll(container) {
-    const instances = [];
-    
     whenGsapReady(function(){
       var gsap = window.gsap;
-
       var root = container || document;
+      var navbar = document.querySelector("[data-menu-wrap]");
+      var lastScrollY = window.scrollY;
+      var navbarHidden = false;
 
+      // Reset navbar position on re-init (Barba navigation)
+      if (navbar) {
+        gsap.set(navbar, { yPercent: 0 });
+        navbarHidden = false;
+      }
 
       function checkThemeSection() {
         const themeSections = root.querySelectorAll("[data-theme-section]");
         if (!themeSections || !themeSections.length || !ENABLE) return;
-        
+
         // Get detection offset, in this case the navbar
-        const navBarHeight = document.querySelector("[data-nav-bar-height]")
-        const themeObserverOffset = navBarHeight ? navBarHeight.offsetHeight / 2 : 0;
+        const navBarHeightEl = document.querySelector("[data-nav-bar-height]");
+        const themeObserverOffset = navBarHeightEl ? navBarHeightEl.offsetHeight / 2 : 0;
+
+        const firstSection = themeSections[0];
+        let firstSectionIsActive = false;
 
         themeSections.forEach(function(themeSection) {
           const rect = themeSection.getBoundingClientRect();
@@ -51,19 +59,52 @@
               }
             });
 
-            // // Check [data-bg-section]
-            // const bgSectionActive = themeSection.getAttribute("data-bg-section");
-            // document.querySelectorAll("[data-bg-nav]").forEach(function(elem) {
-            //   if (elem.getAttribute("data-bg-nav") !== bgSectionActive) {
-            //     elem.setAttribute("data-bg-nav", bgSectionActive);
-            //   }
-            // });
+            if (themeSection === firstSection) {
+              firstSectionIsActive = true;
+            }
           }
         });
+
+        // Transparent navbar background when first section is active
+        if (navbar) {
+          const currentlyTransparent = navbar.getAttribute("data-nav-transparent") === "true";
+          if (firstSectionIsActive !== currentlyTransparent) {
+            navbar.setAttribute("data-nav-transparent", firstSectionIsActive ? "true" : "false");
+          }
+        }
+      }
+
+      function checkNavbarVisibility() {
+        if (!navbar || !ENABLE) return;
+
+        const currentScrollY = window.scrollY;
+        const scrollingDown = currentScrollY > lastScrollY;
+
+        // First section "in view" = its bottom edge is still visible in the viewport
+        const themeSections = root.querySelectorAll("[data-theme-section]");
+        let firstSectionInView = false;
+        if (themeSections.length) {
+          firstSectionInView = themeSections[0].getBoundingClientRect().bottom > 0;
+        }
+
+        if (scrollingDown && !firstSectionInView && !navbarHidden) {
+          gsap.to(navbar, { yPercent: -100, duration: 0.3, ease: "power2.inOut" });
+          navbarHidden = true;
+        } else if ((!scrollingDown || firstSectionInView) && navbarHidden) {
+          gsap.to(navbar, { yPercent: 0, duration: 0.3, ease: "power2.inOut" });
+          navbarHidden = false;
+        }
+
+        lastScrollY = currentScrollY;
+      }
+
+      function onScroll() {
+        checkThemeSection();
+        checkNavbarVisibility();
       }
 
       function startThemeCheck() {
-        document.addEventListener("scroll", checkThemeSection);
+        document.addEventListener("scroll", onScroll);
       }
 
       // Initial check and start listening for scroll
@@ -74,7 +115,6 @@
 
   // Run on initial load
   if(document.readyState === 'complete' || document.readyState === 'interactive'){
-    // small timeout to let other initialisation complete
     setTimeout(function(){ initCheckSectionThemeScroll(document); }, 60);
   } else {
     document.addEventListener('DOMContentLoaded', function(){
@@ -85,9 +125,7 @@
   // Hook into Barba if present so animations run after page enter
   function attachBarbaHook(){
     if(window.barba && window.barba.hooks){
-      // afterEnter gives us access to the new container
       window.barba.hooks.afterEnter(function(data){
-        // animate items within the new container
         initCheckSectionThemeScroll(data.next.container || document);
       });
       return true;
@@ -96,7 +134,6 @@
   }
 
   if(!attachBarbaHook()){
-    // If Barba not ready yet, poll until available and then attach
     var poll = setInterval(function(){
       if(attachBarbaHook()){
         clearInterval(poll);
