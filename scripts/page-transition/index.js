@@ -348,12 +348,16 @@ function initPageAnimations() {
   if (has('[data-footer-parallax]') && window.initFooterParallax) window.initFooterParallax(nextPage);
   if (has('[data-hero-item]') && window.animateHeroItems) window.animateHeroItems(nextPage);
   if (has('[data-featured-image]') && window.animateFeaturedImage) window.animateFeaturedImage(nextPage);
-  if (has('.marquee-swiper') && window.initMarqueeSwiperSlider) window.initMarqueeSwiperSlider(nextPage);
+  if (has('.is-marquee-swiper') && window.initMarqueeSwiperSlider) window.initMarqueeSwiperSlider(nextPage);
   if (has('.purpose_hero_wrap') && window.initPurposeHeroAnimations) window.initPurposeHeroAnimations(nextPage);
   if (has('.purpose_hero_alt_wrap') && window.initPurposeHeroAltAnimations) window.initPurposeHeroAltAnimations(nextPage);
   if (has('[data-sticky-steps-init]') && window.initStickyStepsBasic) window.initStickyStepsBasic(nextPage);
   if (has('[data-filter-scroll]') && window.initFilterScroll) window.initFilterScroll(nextPage);
   if (has('.mwg_effect036') && window.initStackingImageHover) window.initStackingImageHover(nextPage);
+  if (has('[data-bg-color], [data-text-color]') && window.initScrollColors) window.initScrollColors(nextPage);
+  if (has('[data-theme-section]') && window.initCheckSectionThemeScroll) window.initCheckSectionThemeScroll(nextPage);
+  if (has('[data-card]') && window.initCardAnimation) window.initCardAnimation(nextPage);
+  if (has('[data-marquee-scroll-direction-target]') && window.initMarqueeScrollDirection) window.initMarqueeScrollDirection(nextPage);
 }
 
 // update the current nav item based on URL

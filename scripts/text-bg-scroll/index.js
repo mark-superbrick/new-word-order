@@ -115,35 +115,5 @@
 
   window.initTextBackgroundScroll = initTextBackgroundScroll;
 
-  // Run on initial load
-  if(document.readyState === 'complete' || document.readyState === 'interactive'){
-    setTimeout(function(){ initTextBackgroundScroll(document); }, 60);
-  } else {
-    document.addEventListener('DOMContentLoaded', function(){
-      setTimeout(function(){ initTextBackgroundScroll(document); }, 60);
-    });
-  }
-
-  // Hook into Barba if present so animations run after page enter
-  function attachBarbaHook(){
-    if(window.barba && window.barba.hooks){
-      // afterEnter gives us access to the new container
-      window.barba.hooks.afterEnter(function(data){
-        // animate items within the new container
-        initTextBackgroundScroll(data.next.container || document);
-      });
-      return true;
-    }
-    return false;
-  }
-
-  if(!attachBarbaHook()){
-    // If Barba not ready yet, poll until available and then attach
-    var poll = setInterval(function(){
-      if(attachBarbaHook()){
-        clearInterval(poll);
-      }
-    }, 50);
-  }
 
 })();

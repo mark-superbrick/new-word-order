@@ -115,32 +115,5 @@
 
   window.initMarqueeSwiperSlider = initMarqueeSwiperSlider;
 
-  // Run on initial load
-  if(document.readyState === 'complete' || document.readyState === 'interactive'){
-    setTimeout(function(){ initMarqueeSwiperSlider(document); }, 60);
-  } else {
-    document.addEventListener('DOMContentLoaded', function(){
-      setTimeout(function(){ initMarqueeSwiperSlider(document); }, 60);
-    });
-  }
-
-  // Hook into Barba if present so animations run after page enter
-  function attachBarbaHook(){
-    if(window.barba && window.barba.hooks){
-      window.barba.hooks.afterEnter(function(data){
-        initMarqueeSwiperSlider(data.next.container || document);
-      });
-      return true;
-    }
-    return false;
-  }
-
-  if(!attachBarbaHook()){
-    var poll = setInterval(function(){
-      if(attachBarbaHook()){
-        clearInterval(poll);
-      }
-    }, 50);
-  }
 
 })();
