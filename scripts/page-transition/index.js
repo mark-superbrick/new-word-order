@@ -57,6 +57,7 @@ function reinitFinsweetAttributes() {
   existing.remove();
   window.fsAttributes = [];
   var script = document.createElement('script');
+  script.type = 'module';
   script.src = src;
   document.head.appendChild(script);
 }
