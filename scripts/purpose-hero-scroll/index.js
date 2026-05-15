@@ -77,7 +77,7 @@
 
 
         function heroTL() {
-          const totalScroll = window.innerHeight * 2;
+          const totalScroll = window.innerHeight * 1.5;
           // Dirty-check: avoid setAttribute DOM write when value hasn't changed
           let lastValue = -1;
           const scrollTl = gsap.timeline({
@@ -88,7 +88,7 @@
               // end: "bottom top",
               scrub: true,
               pin: true,
-              pinSpacing: false,         // <-- was false; now reserves scroll distance so alt_wrap no longer overlaps
+              pinSpacing: true,         // <-- was false; now reserves scroll distance so alt_wrap no longer overlaps
               invalidateOnRefresh: true,
               markers: DEBUG,
               id: "main",

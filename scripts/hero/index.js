@@ -35,6 +35,8 @@
       const reduceBlur = window.matchMedia('(max-width: 991px)').matches;
       const blurFull   = reduceBlur ? 'blur(0px)' : 'blur(40px)'; 
 
+      const wrap = root.querySelector('[data-hero-wrap]');
+
       // Ensure starting visual state
       gsap.set(items, { yPercent: 100, autoAlpha: 0, filter: blurFull });
 
@@ -43,9 +45,14 @@
         yPercent: 0,
         autoAlpha: 1,
         filter: 'blur(0px)',
-        duration: 0.9,
+        duration: 0.6,
         stagger: 0.12,
-        ease: 'power3.out'
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: wrap || items[0].closest('section'),
+          start: 'top center',
+          markers: DEBUG,
+        },
       });
     });
   }
