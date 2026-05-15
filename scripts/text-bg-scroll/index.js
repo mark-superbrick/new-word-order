@@ -38,75 +38,163 @@
         const textItems = [...textList.querySelectorAll('[data-text-bg-scroll-item]')];
         if (!bgItems.length || !textItems.length) return;
 
-        // bg list: pinned for the full text-list scroll duration
-        bgList.style.height        = '100vh';
-        bgList.style.pointerEvents = 'none';
-        bgList.style.zIndex        = '0';
+        if (wrapper.hasAttribute('data-text-bg-scroll-jacking')) {
+          // Scroll-jacking: pin wrapper and scrub through bg+text slides
+          wrapper.style.height   = '100vh';
+          wrapper.style.overflow = 'hidden';
+          wrapper.style.position = 'relative';
 
-        ScrollTrigger.create({
-          trigger:          bgList,
-          start:            'top top',
-          endTrigger:       textItems[textItems.length - 1],
-          end:              'bottom bottom',
-          pin:              true,
-          pinSpacing:       false,
-          invalidateOnRefresh: true,
-          markers:          DEBUG,
-          id:               'bg-pin-' + wrapIndex,
-        });
+          bgList.style.position      = 'absolute';
+          bgList.style.inset         = '0';
+          bgList.style.height        = '100%';
+          bgList.style.pointerEvents = 'none';
+          bgList.style.zIndex        = '0';
 
-        // text list: pulls back up to overlap the pinned bg list (pin-spacer keeps the 100vh gap)
-        textList.style.marginTop = '-100vh';
-        textList.style.position  = 'relative';
-        textList.style.zIndex    = '1';
+          textList.style.position       = 'absolute';
+          textList.style.inset          = '0';
+          textList.style.height         = '100%';
+          textList.style.zIndex         = '1';
+          textList.style.marginTop      = '0';
+          textList.style.justifyContent = 'flex-start';
 
-        // bg items: stacked absolutely, first one visible
-        bgItems.forEach((item, i) => {
-          item.style.position = 'absolute';
-          item.style.inset    = '0';
-          item.style.width    = '100%';
-          item.style.height   = '100%';
-          gsap.set(item, {
-            opacity: i === 0 ? 1 : 0,
-            filter:  i === 0 ? 'blur(0px)' : blurFull,
+          bgItems.forEach(item => {
+            item.style.position = 'absolute';
+            item.style.inset    = '0';
+            item.style.width    = '100%';
+            item.style.height   = '100%';
           });
-        });
 
-        // text items: start hidden below
-        gsap.set(textItems, { opacity: 0, filter: blurFull, y: 60 });
+          textItems.forEach(item => {
+            item.style.position = 'absolute';
+            item.style.inset    = '0';
+            item.style.width    = '100%';
+            item.style.height   = '100%';
+          });
 
-        function activateBg(index) {
+          gsap.set(bgItems, { opacity: 0, filter: blurFull });
+          gsap.set(bgItems[0], { opacity: 1, filter: 'blur(0px)' });
+          gsap.set(textItems, { yPercent: 100, opacity: 0, filter: blurFull, overwrite: true });
+
+          const totalItems = textItems.length;
+          let lastSegment  = -1;
+          const isOnlyItem = totalItems === 1;
+
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger:             wrapper,
+              start:               'top top',
+              end:                 () => `+=${totalItems * window.innerHeight}`,
+              scrub:               true,
+              pin:                 true,
+              pinSpacing:          true,
+              invalidateOnRefresh: true,
+              markers:             DEBUG,
+              id:                  'text-bg-' + wrapIndex,
+              onUpdate(self) {
+                const progress = Math.max(0, Math.min(1, self.progress || 0));
+                const segment  = Math.min(totalItems - 1, Math.floor(progress * totalItems));
+                if (segment === lastSegment) return;
+                lastSegment = segment;
+                textItems.forEach((el, i) => el.classList.toggle('is-active', i === segment));
+              }
+            }
+          });
+
+          if (textItems.length > 1) {
+            gsap.set(textItems[0], { yPercent: 0, opacity: 1, filter: 'blur(0px)', overwrite: true });
+          }
+
+          // bg crossfades: fade in bgItems[i], fade out bgItems[i-1]
+          bgItems.forEach((bgItem, i) => {
+            if (i === 0) return;
+            tl.to(bgItem,         { opacity: 1, filter: 'blur(0px)', duration: 0.6, ease: 'power3.out' }, i);
+            tl.to(bgItems[i - 1], { opacity: 0, filter: blurFull,    duration: 0.6, ease: 'power3.in'  }, i);
+          });
+
+          const lastIndex = textItems.length - 1;
+          textItems.forEach((textItem, i) => {
+            const inTime  = i;
+            const outTime = i + 0.6;
+
+            if (i !== 0 || isOnlyItem) {
+              tl.to(textItem, { yPercent: 0, opacity: 1, filter: 'blur(0px)', duration: 0.6, ease: 'power3.out' }, inTime);
+            } else {
+              tl.set(textItem, { yPercent: 0, opacity: 1, filter: 'blur(0px)' }, inTime);
+            }
+
+            if (i !== lastIndex) {
+              tl.to(textItem, { yPercent: -20, opacity: 0, filter: blurFull, duration: 0.6, ease: 'power3.in' }, outTime);
+            } else {
+              tl.set(textItem, { yPercent: 0, opacity: 1, filter: 'blur(0px)' }, outTime);
+            }
+          });
+
+        } else {
+          // Simple scroll: pin bg list, scroll text list over it
+          bgList.style.height        = '100vh';
+          bgList.style.pointerEvents = 'none';
+          bgList.style.zIndex        = '0';
+
+          ScrollTrigger.create({
+            trigger:             bgList,
+            start:               'top top',
+            endTrigger:          textItems[textItems.length - 1],
+            end:                 'bottom bottom',
+            pin:                 true,
+            pinSpacing:          false,
+            invalidateOnRefresh: true,
+            markers:             DEBUG,
+            id:                  'bg-pin-' + wrapIndex,
+          });
+
+          textList.style.marginTop = '-100vh';
+          textList.style.position  = 'relative';
+          textList.style.zIndex    = '1';
+
           bgItems.forEach((item, i) => {
-            gsap.to(item, {
-              opacity:  i === index ? 1 : 0,
-              filter:   i === index ? 'blur(0px)' : blurFull,
-              duration: i === index ? 0.6 : 0.4,
-              ease:     i === index ? 'power3.out' : 'power3.in',
+            item.style.position = 'absolute';
+            item.style.inset    = '0';
+            item.style.width    = '100%';
+            item.style.height   = '100%';
+            gsap.set(item, {
+              opacity: i === 0 ? 1 : 0,
+              filter:  i === 0 ? 'blur(0px)' : blurFull,
+            });
+          });
+
+          gsap.set(textItems, { opacity: 0, filter: blurFull, y: 60 });
+
+          function activateBg(index) {
+            bgItems.forEach((item, i) => {
+              gsap.to(item, {
+                opacity:  i === index ? 1 : 0,
+                filter:   i === index ? 'blur(0px)' : blurFull,
+                duration: i === index ? 0.6 : 0.4,
+                ease:     i === index ? 'power3.out' : 'power3.in',
+              });
+            });
+          }
+
+          textItems.forEach((textItem, i) => {
+            ScrollTrigger.create({
+              trigger: textItem,
+              start:   'top center',
+              markers: DEBUG,
+              id:      'text-bg-' + wrapIndex + '-' + i,
+              onEnter: () => {
+                activateBg(i);
+                textItems.forEach(el => el.classList.remove('is-active'));
+                textItem.classList.add('is-active');
+                gsap.to(textItem, { opacity: 1, filter: 'blur(0px)', y: 0, duration: 0.6, ease: 'power3.out' });
+              },
+              onEnterBack: () => {
+                activateBg(i);
+                textItems.forEach(el => el.classList.remove('is-active'));
+                textItem.classList.add('is-active');
+              },
             });
           });
         }
-
-        textItems.forEach((textItem, i) => {
-          ScrollTrigger.create({
-            trigger: textItem,
-            start:   'top center',
-            markers: DEBUG,
-            // pin:    true,
-            // pinSpacing: true,
-            id:      'text-bg-' + wrapIndex + '-' + i,
-            onEnter: () => {
-              activateBg(i);
-              textItems.forEach(el => el.classList.remove('is-active'));
-              textItem.classList.add('is-active');
-              gsap.to(textItem, { opacity: 1, filter: 'blur(0px)', y: 0, duration: 0.6, ease: 'power3.out' });
-            },
-            onEnterBack: () => {
-              activateBg(i);
-              textItems.forEach(el => el.classList.remove('is-active'));
-              textItem.classList.add('is-active');
-            },
-          });
-        });
       });
     });
   }
