@@ -366,6 +366,10 @@ function initPageAnimations() {
   if (has('[data-theme-section]') && window.initCheckSectionThemeScroll) window.initCheckSectionThemeScroll(nextPage);
   if (has('[data-card]') && window.initCardAnimation) window.initCardAnimation(nextPage);
   if (has('[data-marquee-scroll-direction-target]') && window.initMarqueeScrollDirection) window.initMarqueeScrollDirection(nextPage);
+  if (has('[data-us-project]') && window.UnicornStudio) {
+    if (typeof window.UnicornStudio.destroy === 'function') window.UnicornStudio.destroy();
+    if (typeof window.UnicornStudio.init === 'function') window.UnicornStudio.init();
+  }
 }
 
 // update the current nav item based on URL
