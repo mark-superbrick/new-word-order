@@ -101,7 +101,8 @@
         const prevTextColor   = prevSection ? resolveColor(prevSection.dataset.textColor)   : null;
         const prevAccentColor = prevSection ? resolveColor(prevSection.dataset.accentColor) : null;
 
-        const accentTargets = section.querySelectorAll('[data-accent-target]');
+        const accentParent  = section.closest('section') || section;
+        const accentTargets = accentParent.querySelectorAll('[data-accent-target]');
 
         if (index === 0) {
           if (bgColor)                              gsap.set(bgLayer,       { backgroundColor: bgColor });
@@ -153,7 +154,8 @@
           if (bg)   activeBgColor   = bg;
           if (text) activeTextColor = text;
           if (accent) {
-            const targets = section.querySelectorAll('[data-accent-target]');
+            const ap = section.closest('section') || section;
+            const targets = ap.querySelectorAll('[data-accent-target]');
             if (targets.length) gsap.set(targets, { color: accent });
           }
         }
