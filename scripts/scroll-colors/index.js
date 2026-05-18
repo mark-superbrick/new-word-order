@@ -85,32 +85,39 @@
         return value;
       }
 
-      const sections = gsap.utils.toArray('[data-bg-color], [data-text-color]');
+      const sections = gsap.utils.toArray('[data-bg-color], [data-text-color], [data-accent-color]');
 
       sections.forEach(section => {
         if (section.dataset.bgColor) section.style.backgroundColor = 'transparent';
       });
 
       sections.forEach((section, index) => {
-        const bgColor   = resolveColor(section.dataset.bgColor);
-        const textColor = resolveColor(section.dataset.textColor);
+        const bgColor     = resolveColor(section.dataset.bgColor);
+        const textColor   = resolveColor(section.dataset.textColor);
+        const accentColor = resolveColor(section.dataset.accentColor);
 
-        const prevSection   = sections[index - 1] || null;
-        const prevBgColor   = prevSection ? resolveColor(prevSection.dataset.bgColor)   : null;
-        const prevTextColor = prevSection ? resolveColor(prevSection.dataset.textColor) : null;
+        const prevSection     = sections[index - 1] || null;
+        const prevBgColor     = prevSection ? resolveColor(prevSection.dataset.bgColor)     : null;
+        const prevTextColor   = prevSection ? resolveColor(prevSection.dataset.textColor)   : null;
+        const prevAccentColor = prevSection ? resolveColor(prevSection.dataset.accentColor) : null;
+
+        const accentTargets = section.querySelectorAll('[data-accent-target]');
 
         if (index === 0) {
-          if (bgColor)   gsap.set(bgLayer,     { backgroundColor: bgColor });
-          if (textColor) gsap.set(mainWrapper, { color: textColor });
+          if (bgColor)                              gsap.set(bgLayer,       { backgroundColor: bgColor });
+          if (textColor)                            gsap.set(mainWrapper,   { color: textColor });
+          if (accentColor && accentTargets.length)  gsap.set(accentTargets, { color: accentColor });
         }
 
         // Pre-build tween vars at setup time — avoids object allocation inside scroll callbacks.
         // backgroundColor goes to bgLayer (fixed overlay); color goes to mainWrapper (text).
         // overwrite: 'auto' kills any in-flight tween on the same property before starting the new one.
-        const enterBgVars    = bgColor      ? { duration: duration, overwrite: true, ease: 'linear', backgroundColor: bgColor }      : null;
-        const enterTextVars  = textColor    ? { duration: duration, overwrite: true, ease: 'linear', color: textColor }               : null;
-        const leaveBgVars    = prevBgColor  ? { duration: duration, overwrite: true, ease: 'linear', backgroundColor: prevBgColor }  : null;
-        const leaveTextVars  = prevTextColor ? { duration: duration, overwrite: true, ease: 'linear', color: prevTextColor }          : null;
+        const enterBgVars     = bgColor                                    ? { duration: duration, overwrite: true, ease: 'linear', backgroundColor: bgColor }      : null;
+        const enterTextVars   = textColor                                  ? { duration: duration, overwrite: true, ease: 'linear', color: textColor }               : null;
+        const enterAccentVars = (accentColor && accentTargets.length)      ? { duration: duration, overwrite: true, ease: 'linear', color: accentColor }             : null;
+        const leaveBgVars     = prevBgColor                                ? { duration: duration, overwrite: true, ease: 'linear', backgroundColor: prevBgColor }   : null;
+        const leaveTextVars   = prevTextColor                              ? { duration: duration, overwrite: true, ease: 'linear', color: prevTextColor }            : null;
+        const leaveAccentVars = (prevAccentColor && accentTargets.length)  ? { duration: duration, overwrite: true, ease: 'linear', color: prevAccentColor }         : null;
 
         ScrollTrigger.create({
           trigger: section,
@@ -118,12 +125,14 @@
           markers: DEBUG,
           id: 'color-' + index,
           onEnter() {
-            if (enterBgVars)   gsap.to(bgLayer,     enterBgVars);
-            if (enterTextVars) gsap.to(mainWrapper, enterTextVars);
+            if (enterBgVars)     gsap.to(bgLayer,       enterBgVars);
+            if (enterTextVars)   gsap.to(mainWrapper,   enterTextVars);
+            if (enterAccentVars) gsap.to(accentTargets, enterAccentVars);
           },
           onLeaveBack() {
-            if (leaveBgVars)   gsap.to(bgLayer,     leaveBgVars);
-            if (leaveTextVars) gsap.to(mainWrapper, leaveTextVars);
+            if (leaveBgVars)     gsap.to(bgLayer,       leaveBgVars);
+            if (leaveTextVars)   gsap.to(mainWrapper,   leaveTextVars);
+            if (leaveAccentVars) gsap.to(accentTargets, leaveAccentVars);
           },
         });
       });
@@ -138,10 +147,15 @@
       sections.forEach((section) => {
         const triggerY = section.getBoundingClientRect().top + scrollY - window.innerHeight * 0.5;
         if (scrollY >= triggerY) {
-          const bg   = resolveColor(section.dataset.bgColor);
-          const text = resolveColor(section.dataset.textColor);
+          const bg     = resolveColor(section.dataset.bgColor);
+          const text   = resolveColor(section.dataset.textColor);
+          const accent = resolveColor(section.dataset.accentColor);
           if (bg)   activeBgColor   = bg;
           if (text) activeTextColor = text;
+          if (accent) {
+            const targets = section.querySelectorAll('[data-accent-target]');
+            if (targets.length) gsap.set(targets, { color: accent });
+          }
         }
       });
       if (activeBgColor)   gsap.set(bgLayer,     { backgroundColor: activeBgColor });
