@@ -33,8 +33,14 @@
         navbarHidden = false;
       }
 
+      function getTopLevelThemeSections() {
+        return Array.from(root.querySelectorAll("[data-theme-section]")).filter(
+          function(el) { return !el.parentElement.closest("[data-theme-section]"); }
+        );
+      }
+
       function checkThemeSection() {
-        const themeSections = root.querySelectorAll("[data-theme-section]");
+        const themeSections = getTopLevelThemeSections();
         if (!themeSections || !themeSections.length || !ENABLE) return;
 
         // Get detection offset, in this case the navbar
@@ -42,6 +48,7 @@
         const themeObserverOffset = navBarHeightEl ? navBarHeightEl.offsetHeight / 2 : 0;
 
         const firstSection = themeSections[0];
+        const lastSection = themeSections[themeSections.length - 1];
         let firstSectionIsActive = false;
 
         themeSections.forEach(function(themeSection) {
@@ -60,7 +67,7 @@
             });
 
             if (themeSection === firstSection) {
-              firstSectionIsActive = true;
+              firstSectionIsActive = themeSection !== lastSection;
             }
           }
         });
@@ -81,7 +88,7 @@
         const scrollingDown = currentScrollY > lastScrollY;
 
         // First section "in view" = its bottom edge is still visible in the viewport
-        const themeSections = root.querySelectorAll("[data-theme-section]");
+        const themeSections = getTopLevelThemeSections();
         let firstSectionInView = false;
         if (themeSections.length) {
           firstSectionInView = themeSections[0].getBoundingClientRect().bottom > 0;
