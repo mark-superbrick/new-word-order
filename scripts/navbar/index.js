@@ -440,11 +440,14 @@
         tl.to(navList, { autoAlpha: 0, duration: 0.3, ease: "power2.inOut" }, 0.05);
       }
 
-      // MOBILE — slide-over panels 
+      function preventTouchScroll(e) { e.preventDefault(); }
+
+      // MOBILE — slide-over panels
       function openMobilePanel(panelName) {
         const el = getPanel(panelName);
         if (!el) return;
         if (window.lenis) window.lenis.stop();
+        document.addEventListener("touchmove", preventTouchScroll, { passive: false });
         killMobilePanel();
         state.mobilePanelActive = panelName;
 
@@ -482,6 +485,7 @@
         const el = getPanel(state.mobilePanelActive);
         if (!el) return;
         if (window.lenis) window.lenis.start();
+        document.removeEventListener("touchmove", preventTouchScroll);
         killMobilePanel();
 
         const navItems = getNavItems();
