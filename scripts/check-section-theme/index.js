@@ -83,6 +83,8 @@
 
       function checkNavbarVisibility() {
         if (!navbar || !ENABLE) return;
+        var burger = document.querySelector(".mega-nav__burger");
+        if (burger && burger.getAttribute("aria-expanded") === "true") return;
 
         const currentScrollY = window.scrollY;
         const scrollingDown = currentScrollY > lastScrollY;
