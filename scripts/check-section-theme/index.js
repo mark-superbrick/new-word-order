@@ -87,17 +87,12 @@
         const currentScrollY = window.scrollY;
         const scrollingDown = currentScrollY > lastScrollY;
 
-        // First section "in view" = its bottom edge is still visible in the viewport
-        const themeSections = getTopLevelThemeSections();
-        let firstSectionInView = false;
-        if (themeSections.length) {
-          firstSectionInView = themeSections[0].getBoundingClientRect().bottom > 0;
-        }
+        const pastThreshold = currentScrollY > 300;
 
-        if (scrollingDown && !firstSectionInView && !navbarHidden) {
+        if (scrollingDown && pastThreshold && !navbarHidden) {
           gsap.to(navbar, { yPercent: -100, duration: 0.3, ease: "power2.inOut" });
           navbarHidden = true;
-        } else if ((!scrollingDown || firstSectionInView) && navbarHidden) {
+        } else if ((!scrollingDown || !pastThreshold) && navbarHidden) {
           gsap.to(navbar, { yPercent: 0, duration: 0.3, ease: "power2.inOut" });
           navbarHidden = false;
         }
