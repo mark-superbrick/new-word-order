@@ -20,16 +20,17 @@
   }
 
   function initMegaNavDirectionalHover(container) {
-    const instances = [];
-    
     whenGsapReady(function(){
       var gsap = window.gsap;    
 
       var root = container || document;  
 
       // DOM references
-      const menuWrap = root.querySelector("[data-menu-wrap]");
+      const menuWrap = document.querySelector("[data-menu-wrap]") || root.querySelector("[data-menu-wrap]");
       if (!menuWrap || menuWrap.length === 0 || !ENABLE) return;
+      if (typeof menuWrap.__megaNavCleanup === "function") {
+        menuWrap.__megaNavCleanup();
+      }
 
       const DUR = {
         bgMorph: 0.4,
@@ -58,6 +59,7 @@
       const [lineTop, lineMid, lineBot] = ["top", "mid", "bot"].map(
         (id) => document.querySelector(`[data-burger-line='${id}']`)
       );
+      let burgerClickHandler = null;
 
       // State
       const state = {
@@ -127,6 +129,9 @@
       }
 
       function setupMobile() {
+        menuWrap.setAttribute("data-menu-open", "false");
+        if (burger) burger.setAttribute("aria-expanded", "false");
+        resetToggles();
         panels.forEach((p) => {
           gsap.set(p, { autoAlpha: 0, xPercent: 0, visibility: "visible", pointerEvents: "none" });
           gsap.set(getFade(p), { xPercent: 20, autoAlpha: 0 });
@@ -385,6 +390,14 @@
         return tl;
       }
 
+      function unlockPageScroll() {
+        document.body.style.overflow = "";
+        document.removeEventListener("touchmove", preventTouchScroll);
+        if (window.lenis && typeof window.lenis.start === "function") {
+          window.lenis.start();
+        }
+      }
+
       // MOBILE — open/close menu
       function openMobileMenu() {
         killMobile();
@@ -421,7 +434,7 @@
       
         const tl = gsap.timeline({
           onComplete() {
-            document.body.style.overflow = "";
+            unlockPageScroll();
             state.mobileTl = null;
             setupMobile();
           },
@@ -555,7 +568,7 @@
             burger.setAttribute("aria-expanded", "false");
             state.mobileMenuOpen = false;
             state.mobilePanelActive = null;
-            document.body.style.overflow = "";
+            unlockPageScroll();
             resetDesktop();
           }
           
@@ -589,7 +602,8 @@
       document.addEventListener("keydown", handleEscape);
       document.addEventListener("click", handleDocClick);
       
-      burger.addEventListener("click", () => state.mobileMenuOpen ? closeMobileMenu() : openMobileMenu());
+      burgerClickHandler = () => state.mobileMenuOpen ? closeMobileMenu() : openMobileMenu();
+      burger.addEventListener("click", burgerClickHandler);
       
       backBtn.addEventListener("click", closeMobilePanel);
       
@@ -598,56 +612,56 @@
       // INIT
       state.isMobile ? setupMobile() : resetDesktop();
 
-      window.megaNavResetMobile = function() {
+      function resetMegaNav() {
+        clearTimers();
+        killDropdown();
         killMobile();
         killMobilePanel();
+        state.isOpen = false;
+        state.activePanel = null;
+        state.activePanelIndex = -1;
         state.mobileMenuOpen = false;
         state.mobilePanelActive = null;
         burger.setAttribute("aria-expanded", "false");
         menuWrap.setAttribute("data-menu-open", "false");
-        document.body.style.overflow = "";
-        document.removeEventListener("touchmove", preventTouchScroll);
-        if (window.lenis) window.lenis.start();
+        resetToggles();
+        unlockPageScroll();
         gsap.set([lineTop, lineMid, lineBot], { rotation: 0, y: 0, autoAlpha: 1 });
-        setupMobile();
+        if (state.isMobile) {
+          setupMobile();
+        } else {
+          resetDesktop();
+        }
+      }
+
+      window.megaNavReset = resetMegaNav;
+      window.megaNavResetMobile = resetMegaNav;
+
+      menuWrap.__megaNavCleanup = function() {
+        clearTimers();
+        killDropdown();
+        killMobile();
+        killMobilePanel();
+        toggles.forEach((btn) => {
+          btn.removeEventListener("mouseenter", handleToggleEnter);
+          btn.removeEventListener("mouseleave", handleToggleLeave);
+          btn.removeEventListener("keydown", handleKeydownOnToggle);
+          btn.removeEventListener("click", handleToggleClick);
+        });
+        dropWrapper.removeEventListener("mouseenter", handleWrapperEnter);
+        dropWrapper.removeEventListener("mouseleave", handleWrapperLeave);
+        panels.forEach((p) => p.removeEventListener("keydown", handleKeydownInPanel));
+        backdrop.removeEventListener("click", closeDropdown);
+        document.removeEventListener("keydown", handleEscape);
+        document.removeEventListener("click", handleDocClick);
+        if (burgerClickHandler) burger.removeEventListener("click", burgerClickHandler);
+        backBtn.removeEventListener("click", closeMobilePanel);
+        window.removeEventListener("resize", handleResize);
+        document.removeEventListener("touchmove", preventTouchScroll);
       };
     });
   }
 
-
-  // Run on initial load
-  if(document.readyState === 'complete' || document.readyState === 'interactive'){
-    // small timeout to let other initialisation complete
-    setTimeout(function(){ initMegaNavDirectionalHover(document); }, 60);
-  } else {
-    document.addEventListener('DOMContentLoaded', function(){
-      setTimeout(function(){ initMegaNavDirectionalHover(document); }, 60);
-    });
-  }
-
-  // Hook into Barba if present so animations run after page enter
-  function attachBarbaHook(){
-    if(window.barba && window.barba.hooks){
-      window.barba.hooks.beforeLeave(function() {
-        if (typeof window.megaNavResetMobile === "function") window.megaNavResetMobile();
-      });
-      // afterEnter gives us access to the new container
-      window.barba.hooks.afterEnter(function(data){
-        // animate items within the new container
-        initMegaNavDirectionalHover(data.next.container || document);
-      });
-      return true;
-    }
-    return false;
-  }
-
-  if(!attachBarbaHook()){
-    // If Barba not ready yet, poll until available and then attach
-    var poll = setInterval(function(){
-      if(attachBarbaHook()){
-        clearInterval(poll);
-      }
-    }, 50);
-  }
+  window.initMegaNavDirectionalHover = initMegaNavDirectionalHover;
 
 })();

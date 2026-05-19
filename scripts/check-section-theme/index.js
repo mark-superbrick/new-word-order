@@ -26,6 +26,11 @@
       var navbar = document.querySelector("[data-menu-wrap]");
       var lastScrollY = window.scrollY;
       var navbarHidden = false;
+      var disposed = false;
+
+      if (typeof window.__checkSectionThemeCleanup === "function") {
+        window.__checkSectionThemeCleanup();
+      }
 
       // Reset navbar position on re-init (Barba navigation)
       if (navbar) {
@@ -103,17 +108,23 @@
       }
 
       function onScroll() {
+        if (disposed) return;
         checkThemeSection();
         checkNavbarVisibility();
       }
 
       function startThemeCheck() {
-        document.addEventListener("scroll", onScroll);
+        document.addEventListener("scroll", onScroll, { passive: true });
       }
 
       // Initial check and start listening for scroll
       checkThemeSection();
       startThemeCheck();
+
+      window.__checkSectionThemeCleanup = function() {
+        disposed = true;
+        document.removeEventListener("scroll", onScroll);
+      };
     });
   }
 

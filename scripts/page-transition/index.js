@@ -40,6 +40,9 @@ gsap.defaults({ ease: "osmo", duration: durationDefault });
 
 function initOnceFunctions() {
   initLenis();
+  if (typeof window.initMegaNavDirectionalHover === "function") {
+    window.initMegaNavDirectionalHover(document);
+  }
 }
 
 function initBeforeEnterFunctions(next) {
@@ -185,6 +188,11 @@ barba.hooks.beforeEnter(data => {
   applyThemeFrom(data.next.container);
 });
 
+barba.hooks.beforeLeave(() => {
+  if (typeof window.megaNavReset === "function") window.megaNavReset();
+  else if (typeof window.megaNavResetMobile === "function") window.megaNavResetMobile();
+});
+
 barba.hooks.afterLeave(() => {
   if(hasScrollTrigger){
     ScrollTrigger.getAll().forEach(trigger => trigger.kill());
@@ -197,6 +205,7 @@ barba.hooks.enter(data => {
 
 barba.hooks.afterEnter(data => {
   document.body.style.overflow = "";
+  if (typeof window.megaNavReset === "function") window.megaNavReset();
 
   initAfterEnterFunctions(data.next.container);
 
