@@ -196,8 +196,10 @@ barba.hooks.enter(data => {
 })
 
 barba.hooks.afterEnter(data => {
+  document.body.style.overflow = "";
+
   initAfterEnterFunctions(data.next.container);
-  
+
   if (hasLenis) {
     lenis.resize();
     lenis.start();

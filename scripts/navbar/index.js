@@ -608,6 +608,7 @@
         document.body.style.overflow = "";
         document.removeEventListener("touchmove", preventTouchScroll);
         if (window.lenis) window.lenis.start();
+        gsap.set([lineTop, lineMid, lineBot], { rotation: 0, y: 0, autoAlpha: 1 });
         setupMobile();
       };
     });
