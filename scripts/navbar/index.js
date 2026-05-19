@@ -597,6 +597,14 @@
 
       // INIT
       state.isMobile ? setupMobile() : resetDesktop();
+
+      window.megaNavResetMobile = function() {
+        killMobilePanel();
+        setupMobile();
+        state.mobilePanelActive = null;
+        document.removeEventListener("touchmove", preventTouchScroll);
+        if (window.lenis) window.lenis.start();
+      };
     });
   }
 
@@ -614,6 +622,9 @@
   // Hook into Barba if present so animations run after page enter
   function attachBarbaHook(){
     if(window.barba && window.barba.hooks){
+      window.barba.hooks.beforeLeave(function() {
+        if (typeof window.megaNavResetMobile === "function") window.megaNavResetMobile();
+      });
       // afterEnter gives us access to the new container
       window.barba.hooks.afterEnter(function(data){
         // animate items within the new container
