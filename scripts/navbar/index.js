@@ -599,11 +599,16 @@
       state.isMobile ? setupMobile() : resetDesktop();
 
       window.megaNavResetMobile = function() {
+        killMobile();
         killMobilePanel();
-        setupMobile();
+        state.mobileMenuOpen = false;
         state.mobilePanelActive = null;
+        burger.setAttribute("aria-expanded", "false");
+        menuWrap.setAttribute("data-menu-open", "false");
+        document.body.style.overflow = "";
         document.removeEventListener("touchmove", preventTouchScroll);
         if (window.lenis) window.lenis.start();
+        setupMobile();
       };
     });
   }
