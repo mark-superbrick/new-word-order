@@ -444,6 +444,7 @@
       function openMobilePanel(panelName) {
         const el = getPanel(panelName);
         if (!el) return;
+        if (window.lenis) window.lenis.stop();
         killMobilePanel();
         state.mobilePanelActive = panelName;
 
@@ -480,6 +481,7 @@
         if (!state.mobilePanelActive) return;
         const el = getPanel(state.mobilePanelActive);
         if (!el) return;
+        if (window.lenis) window.lenis.start();
         killMobilePanel();
 
         const navItems = getNavItems();
