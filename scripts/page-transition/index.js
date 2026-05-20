@@ -8,7 +8,7 @@ const mainDomain = host.split('.')[1];
 let DEBUG = mainDomain == 'webflow';
 // let DEBUG = false;
 
-gsap.registerPlugin(CustomEase);
+// gsap.registerPlugin(CustomEase);
 
 history.scrollRestoration = "manual";
 

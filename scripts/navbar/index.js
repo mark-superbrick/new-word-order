@@ -592,8 +592,10 @@
         btn.addEventListener("click", handleToggleClick);
       });
       
-      dropWrapper.addEventListener("mouseenter", handleWrapperEnter);
-      dropWrapper.addEventListener("mouseleave", handleWrapperLeave);
+      if (dropWrapper) {
+        dropWrapper.addEventListener("mouseenter", handleWrapperEnter);
+        dropWrapper.addEventListener("mouseleave", handleWrapperLeave);
+      }
       
       panels.forEach((p) => p.addEventListener("keydown", handleKeydownInPanel));
       
