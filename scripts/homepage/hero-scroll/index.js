@@ -34,7 +34,7 @@
       if (!heroMain || heroMain.length === 0 ||  !ENABLE) return;
 
       const heroImg = heroMain.querySelector('img');
-      const background = heroMain.querySelector(".background_overlay");
+      // const background = heroMain.querySelector(".background_overlay");
       const spark = heroMain.querySelector(".home_hero_spark");
       const content = heroMain.querySelector(".home_hero_content");
       // Fallback: look for any element with a data-number attribute inside hero
@@ -47,19 +47,25 @@
       if (content) content.style.transform = 'translateZ(0)';
 
       // Ensure initial states
-      if (background) gsap.set(background, { autoAlpha: 0 });
-      if (spark) gsap.set(spark, { scale: 5, transformOrigin: "50% 50%" });
+      const sparkStartScale = 5;
+      // // if (background) gsap.set(background, { autoAlpha: 0 });
+      // if (mediaOverlay) gsap.set(mediaOverlay, { autoAlpha: 0 });
+      if (spark) {
+        gsap.set(spark, { scale: sparkStartScale, transformOrigin: "50% 50%" });
+      }
       if (content) gsap.set(content, { xPercent: 100, autoAlpha: 1 });
-      if (mediaOverlay && mediaOverlay.dataset)
-        mediaOverlay.setAttribute(
-          "data-number",
-          mediaOverlay.dataset.number || "0",
-        );
+      // if (mediaOverlay && mediaOverlay.dataset)
+      //   mediaOverlay.setAttribute(
+      //     "data-number",
+      //     mediaOverlay.dataset.number || "0",
+      //   );
 
       // Entry animation — runs once on load, independent of scroll.
       const entry = gsap.timeline({ defaults: { duration: 1, ease: "power3.out" } });
-      entry.to(background || {}, { autoAlpha: 1 }, 0);
-      entry.to(spark || {}, { scale: 3, transformOrigin: "50% 50%" }, 0);
+      
+      // entry.to(background || {}, { autoAlpha: 1 }, 0);
+      // entry.to(mediaOverlay || {}, { autoAlpha: 1 }, 0);
+      entry.to(spark || {}, { scale: sparkStartScale, transformOrigin: "50% 50%" }, 0);
       entry.to(content || {}, { xPercent: 0 }, 0.05);
 
       // Hero scroll-scrubbed timeline — created IMMEDIATELY (not inside entry.call).
@@ -104,7 +110,7 @@
           });
           if (spark) {
             scrollTl.fromTo(spark,
-              { scale: 3, rotation: 0 },
+              { scale: sparkStartScale, rotation: 0 },
               { scale: 0.1, rotation: 180, opacity: 0, transformOrigin: "50% 50%", ease: "none" },
               0
             );
