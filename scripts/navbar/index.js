@@ -122,8 +122,8 @@
           gsap.set(p, { visibility: "hidden", opacity: 0, pointerEvents: "none", xPercent: 0 });
           gsap.set(getFade(p), { autoAlpha: 0, x: 0, y: 0 });
         });
-        gsap.set(dropContainer, { height: 0 });
-        gsap.set(backdrop, { autoAlpha: 0 });
+        if (dropContainer) gsap.set(dropContainer, { height: 0 });
+        if (backdrop) gsap.set(backdrop, { autoAlpha: 0 });
         menuWrap.setAttribute("data-menu-open", "false");
         resetToggles();
       }
@@ -140,8 +140,8 @@
         gsap.set(navList, { autoAlpha: 0, x: 0 });
         gsap.set(backBtn, { autoAlpha: 0 });
         gsap.set(logo, { autoAlpha: 1 });
-        gsap.set(dropContainer, { clearProps: "height" });
-        gsap.set(backdrop, { autoAlpha: 0 });
+        if (dropContainer) gsap.set(dropContainer, { clearProps: "height" });
+        if (backdrop) gsap.set(backdrop, { autoAlpha: 0 });
       }
 
       function measurePanel(name) {
@@ -599,7 +599,7 @@
       
       panels.forEach((p) => p.addEventListener("keydown", handleKeydownInPanel));
       
-      backdrop.addEventListener("click", closeDropdown);
+      if (backdrop) backdrop.addEventListener("click", closeDropdown);
       
       document.addEventListener("keydown", handleEscape);
       document.addEventListener("click", handleDocClick);
@@ -650,10 +650,12 @@
           btn.removeEventListener("keydown", handleKeydownOnToggle);
           btn.removeEventListener("click", handleToggleClick);
         });
-        dropWrapper.removeEventListener("mouseenter", handleWrapperEnter);
-        dropWrapper.removeEventListener("mouseleave", handleWrapperLeave);
+        if (dropWrapper) {
+          dropWrapper.removeEventListener("mouseenter", handleWrapperEnter);
+          dropWrapper.removeEventListener("mouseleave", handleWrapperLeave);
+        }
         panels.forEach((p) => p.removeEventListener("keydown", handleKeydownInPanel));
-        backdrop.removeEventListener("click", closeDropdown);
+        if (backdrop) backdrop.removeEventListener("click", closeDropdown);
         document.removeEventListener("keydown", handleEscape);
         document.removeEventListener("click", handleDocClick);
         if (burgerClickHandler) burger.removeEventListener("click", burgerClickHandler);
