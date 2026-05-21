@@ -94,11 +94,15 @@
         if (state[key]) { state[key].kill(); state[key] = null; }
       }
 
+      function killPanelTweens() {
+        panels.forEach((p) => { gsap.killTweensOf(p); gsap.killTweensOf(getFade(p)); });
+      }
+
       function killDropdown() {
         killTl("tl");
         gsap.killTweensOf(dropContainer);
         gsap.killTweensOf(backdrop);
-        panels.forEach((p) => { gsap.killTweensOf(p); gsap.killTweensOf(getFade(p)); });
+        killPanelTweens();
       }
 
       function killMobile() {
@@ -110,7 +114,14 @@
         killTl("mobilePanelTl");
         gsap.killTweensOf(getNavItems());
         gsap.killTweensOf([backBtn, logo]);
-        panels.forEach((p) => { gsap.killTweensOf(p); gsap.killTweensOf(getFade(p)); });
+        killPanelTweens();
+      }
+
+      function killAll() {
+        clearTimers();
+        killDropdown();
+        killMobile();
+        killMobilePanel();
       }
 
       function resetToggles() {
@@ -124,6 +135,7 @@
         });
         if (dropContainer) gsap.set(dropContainer, { height: 0 });
         if (backdrop) gsap.set(backdrop, { autoAlpha: 0 });
+        if (burger) burger.setAttribute("aria-expanded", "false");
         menuWrap.setAttribute("data-menu-open", "false");
         resetToggles();
       }
@@ -420,23 +432,24 @@
         }
       }
 
-      function closeMobileMenu() {
+      function closeMobileMenu(onDone) {
         const hadPanel = state.mobilePanelActive;
         const panelEl = hadPanel ? getPanel(hadPanel) : null;
-      
+
         killMobile();
         killMobilePanel();
-      
+
         menuWrap.setAttribute("data-menu-open", "false");
         state.mobileMenuOpen = false;
         state.mobilePanelActive = null;
         burger.setAttribute("aria-expanded", "false");
-      
+
         const tl = gsap.timeline({
           onComplete() {
             unlockPageScroll();
             state.mobileTl = null;
             setupMobile();
+            if (onDone) onDone();
           },
         });
         state.mobileTl = tl;
@@ -553,31 +566,25 @@
           state.isMobile = window.innerWidth <= 991;
 
           if (was && !state.isMobile) {
-            killMobile(); killMobilePanel();
+            killAll();
             gsap.set(navList, { clearProps: "all" });
             gsap.set(getNavItems(), { clearProps: "all" });
             gsap.set(backBtn, { autoAlpha: 0 });
             gsap.set(logo, { clearProps: "all" });
             gsap.set([lineTop, lineMid, lineBot], { rotation: 0, y: 0, autoAlpha: 1 });
-          
             panels.forEach((p) => {
               gsap.set(p, { clearProps: "all" });
               gsap.set(getFade(p), { clearProps: "all" });
             });
-          
-            burger.setAttribute("aria-expanded", "false");
             state.mobileMenuOpen = false;
             state.mobilePanelActive = null;
             unlockPageScroll();
             resetDesktop();
           }
-          
+
           if (!was && state.isMobile) {
-            killDropdown();
+            killAll();
             state.isOpen = false; state.activePanel = null; state.activePanelIndex = -1;
-            clearTimers();
-            menuWrap.setAttribute("data-menu-open", "false");
-            resetToggles();
             setupMobile();
           }
           
@@ -615,35 +622,36 @@
       state.isMobile ? setupMobile() : resetDesktop();
 
       function resetMegaNav() {
-        clearTimers();
-        killDropdown();
-        killMobile();
-        killMobilePanel();
+        killAll();
         state.isOpen = false;
         state.activePanel = null;
         state.activePanelIndex = -1;
         state.mobileMenuOpen = false;
         state.mobilePanelActive = null;
-        burger.setAttribute("aria-expanded", "false");
-        menuWrap.setAttribute("data-menu-open", "false");
-        resetToggles();
         unlockPageScroll();
         gsap.set([lineTop, lineMid, lineBot], { rotation: 0, y: 0, autoAlpha: 1 });
-        if (state.isMobile) {
-          setupMobile();
-        } else {
-          resetDesktop();
-        }
+        if (state.isMobile) setupMobile(); else resetDesktop();
       }
 
       window.megaNavReset = resetMegaNav;
       window.megaNavResetMobile = resetMegaNav;
 
+      window.megaNavBeforeLeave = function() {
+        if (state.mobileMenuOpen) {
+          return new Promise(resolve => closeMobileMenu(resolve));
+        }
+        if (state.isOpen) {
+          clearTimers();
+          killDropdown();
+          state.isOpen = false;
+          state.activePanel = null;
+          state.activePanelIndex = -1;
+          resetDesktop();
+        }
+      };
+
       menuWrap.__megaNavCleanup = function() {
-        clearTimers();
-        killDropdown();
-        killMobile();
-        killMobilePanel();
+        killAll();
         toggles.forEach((btn) => {
           btn.removeEventListener("mouseenter", handleToggleEnter);
           btn.removeEventListener("mouseleave", handleToggleLeave);

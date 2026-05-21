@@ -189,8 +189,7 @@ barba.hooks.beforeEnter(data => {
 });
 
 barba.hooks.beforeLeave(() => {
-  if (typeof window.megaNavReset === "function") window.megaNavReset();
-  else if (typeof window.megaNavResetMobile === "function") window.megaNavResetMobile();
+  if (typeof window.megaNavBeforeLeave === "function") return window.megaNavBeforeLeave();
 });
 
 barba.hooks.afterLeave(() => {
