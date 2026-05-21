@@ -20,17 +20,18 @@
       const heroImg = heroMain.querySelector('img');
       const spark = heroMain.querySelector(".home_hero_spark");
       const mediaOverlay = heroMain.querySelector(".media_overlay");
-      const content = heroMain.querySelector(".home_hero_content h1");
+      const content = heroMain.querySelector(".home_hero_content");
       const contentChildren = content ? Array.from(content.children) : [];
 
       if (spark) spark.style.transform = 'translateZ(0)';
       if (content) content.style.transform = 'translateZ(0)';
 
       // Initial states — heroImg and content children enter from right, spark scales in
-      const sparkStartScale = 6;
+      const sparkStartScale = 3;
       // if (heroImg) gsap.set(heroImg, { xPercent: 1, autoAlpha: 0 });
       // if (spark) gsap.set(spark, { scale: sparkStartScale, transformOrigin: "50% 50%" });
-      if (contentChildren.length) gsap.set(contentChildren, { xPercent: 40, autoAlpha: 0 });
+      if (contentChildren[0]) gsap.set(contentChildren[0], { xPercent: -40, autoAlpha: 0 });
+      if (contentChildren[1]) gsap.set(contentChildren[1], { xPercent: 40, autoAlpha: 0 });
 
       // Entry — 3.2s expo.out: visually lands ~2.2s, fully settled by 3.2s
       const entry = gsap.timeline({ defaults: { ease: "power3.out", duration: 3.2 } });
@@ -65,8 +66,9 @@
 
       function heroTL() {
         const totalScroll = window.innerHeight * 2;
-        // Dirty-check: avoid setAttribute DOM write when value hasn't changed
         let lastValue = -1;
+        const overlayProxy = { n: 0 };
+
         const scrollTl = gsap.timeline({
           scrollTrigger: {
             trigger: heroMain,
@@ -74,41 +76,43 @@
             end: () => `+=${totalScroll}`,
             scrub: true,
             pin: true,
-            pinSpacing: false,
+            pinSpacing: true,
             invalidateOnRefresh: true,
             markers: DEBUG,
             id: "main",
             refreshPriority: 1,
-            onUpdate(self) {
-              const progress = Math.max(0, Math.min(1, self.progress || 0));
-              const value = Math.round(progress * 100);
-              if (value === lastValue) return;
-              lastValue = value;
-              if (mediaOverlay && mediaOverlay.setAttribute) mediaOverlay.setAttribute("data-number", String(value));
-            },
           },
         });
 
-        // Spark: scale + rotate out from landed state
-        if (spark) {
-          scrollTl.fromTo(spark,
-            { scale: sparkStartScale, rotation: 0 },
-            { scale: 0.1, yPercent: -8, rotation: 180, opacity: 0, transformOrigin: "50% 50%", ease: "power2.out" },
+        // Phase 1 [0→1]: content fades out, no position change
+        if (content) {
+          scrollTl.fromTo(content,
+            { opacity: 1 },
+            { opacity: 0, ease: "none", duration: 1 },
             0
           );
         }
-        // heroImg: slow parallax drift (deepest layer)
-        // if (heroImg) {
-        //   scrollTl.to(heroImg, { y: 80, ease: "none" }, 0);
-        // }
-        // Content: slide left + rise (foreground layer)
-        if (content) {
-          scrollTl.fromTo(content,
-            { xPercent: 0, opacity: 1 },
-            { xPercent: -30, opacity: 0, ease: "none" },
-            0
+
+        // Phase 2 [1→2]: data-number ticks to 100
+        scrollTl.to(overlayProxy, {
+          n: 100,
+          ease: "none",
+          duration: 1,
+          onUpdate() {
+            const v = Math.round(overlayProxy.n);
+            if (v === lastValue) return;
+            lastValue = v;
+            if (mediaOverlay) mediaOverlay.setAttribute("data-number", String(v));
+          }
+        }, 1);
+
+        // Phase 3 [2→3]: spark scales down
+        if (spark) {
+          scrollTl.fromTo(spark,
+            { scale: sparkStartScale, rotation: 0 },
+            { scale: 0.1, yPercent: -8, rotation: 180, opacity: 0, transformOrigin: "50% 50%", ease: "power2.out", duration: 2 },
+            0.5
           );
-          // scrollTl.to(content, { y: 0, ease: "none" }, 0);
         }
       }
     });
