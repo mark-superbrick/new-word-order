@@ -80,7 +80,7 @@
       const getPanel = (name) => document.querySelector(`[data-nav-content="${name}"]`);
       const getToggle = (name) => document.querySelector(`[data-dropdown-toggle="${name}"]`);
       const getFade = (el) => el.querySelectorAll("[data-menu-fade]");
-      const getNavItems = () => navList.querySelectorAll("[data-nav-list-item]");
+      const getNavItems = () => navList ? navList.querySelectorAll("[data-nav-list-item]") : [];
       const getIndex = (name) => toggles.indexOf(getToggle(name));
       const stagger = (n) => (n <= 1 ? 0 : { amount: DUR.stagger });
 
@@ -614,7 +614,7 @@
       burgerClickHandler = () => state.mobileMenuOpen ? closeMobileMenu() : openMobileMenu();
       burger.addEventListener("click", burgerClickHandler);
       
-      backBtn.addEventListener("click", closeMobilePanel);
+      if (backBtn) backBtn.addEventListener("click", closeMobilePanel);
       
       window.addEventListener("resize", handleResize);
 
@@ -667,7 +667,7 @@
         document.removeEventListener("keydown", handleEscape);
         document.removeEventListener("click", handleDocClick);
         if (burgerClickHandler) burger.removeEventListener("click", burgerClickHandler);
-        backBtn.removeEventListener("click", closeMobilePanel);
+        if (backBtn) backBtn.removeEventListener("click", closeMobilePanel);
         window.removeEventListener("resize", handleResize);
         document.removeEventListener("touchmove", preventTouchScroll);
       };
