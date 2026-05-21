@@ -33,4 +33,19 @@
   visibility: visible;
 }
 
+@media screen and (max-width: 991px) {
+ 
+  .mega-nav__bar-link .mega-nav__bar-link-label .navbar_link_icon {
+    display: none;
+  }
 
+  .mega-nav__bar-link.w--current {
+    font-style: italic;
+    color: var(--base-color--primary-500);
+  }
+
+  .mega-nav__bar-link.w--current .mega-nav__bar-link-label .navbar_link_icon {
+    display: block;
+  }
+
+}
