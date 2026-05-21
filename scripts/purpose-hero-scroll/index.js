@@ -62,8 +62,10 @@
       }
 
       function heroTL() {
-        const totalScroll = window.innerHeight * 1.5;
+        const totalScroll = window.innerHeight * 2;
         let lastValue = -1;
+        const overlayProxy = { n: 0 };
+
         const scrollTl = gsap.timeline({
           scrollTrigger: {
             trigger: heroMain,
@@ -76,28 +78,37 @@
             markers: DEBUG,
             id: "main",
             refreshPriority: 1,
-            onUpdate(self) {
-              const progress = Math.max(0, Math.min(1, self.progress || 0));
-              const value = Math.round(progress * 100);
-              if (value === lastValue) return;
-              lastValue = value;
-              if (mediaOverlay && mediaOverlay.setAttribute) mediaOverlay.setAttribute("data-number", String(value));
-            },
           },
         });
 
+        // Phase 1 [0→1]: content fades out, no position change
+        if (content) {
+          scrollTl.fromTo(content,
+            { opacity: 1 },
+            { opacity: 0, ease: "none", duration: 1 },
+            "<"
+          );
+        }
+        
+        // Phase 2 [1→2]: data-number ticks to 100
+        scrollTl.to(overlayProxy, {
+          n: 100,
+          ease: "none",
+          duration: 1,
+          onUpdate() {
+            const v = Math.round(overlayProxy.n);
+            if (v === lastValue) return;
+            lastValue = v;
+            if (mediaOverlay) mediaOverlay.setAttribute("data-number", String(v));
+          }
+        }, "<");
+
+        // Phase 3 [2→3]: spark scales down
         if (spark) {
           scrollTl.fromTo(spark,
             { scale: sparkStartScale, rotation: 0 },
-            { scale: 0.1, yPercent: -8, rotation: 180, opacity: 0, transformOrigin: "50% 50%", ease: "power2.out" },
-            0
-          );
-        }
-        if (content) {
-          scrollTl.fromTo(content,
-            { xPercent: 0, opacity: 1 },
-            { xPercent: -30, opacity: 0, ease: "none" },
-            0
+            { scale: 0.1, rotation: 180, opacity: 0, transformOrigin: "50% 50%", ease: "power2.out", duration: 1 },
+            "<"
           );
         }
       }
