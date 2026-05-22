@@ -189,7 +189,7 @@ barba.hooks.beforeEnter(data => {
 });
 
 barba.hooks.beforeLeave(() => {
-  if (typeof window.megaNavBeforeLeave === "function") return window.megaNavBeforeLeave();
+  if (typeof window.megaNavBeforeLeave === "function") window.megaNavBeforeLeave();
 });
 
 barba.hooks.afterLeave(() => {
@@ -379,7 +379,9 @@ function initPageAnimations() {
   if (has('[data-marquee-scroll-direction-target]') && window.initMarqueeScrollDirection) window.initMarqueeScrollDirection(nextPage);
   if (has('[data-us-project]') && window.UnicornStudio) {
     if (typeof window.UnicornStudio.destroy === 'function') window.UnicornStudio.destroy();
-    if (typeof window.UnicornStudio.init === 'function') window.UnicornStudio.init();
+    requestAnimationFrame(() => {
+      if (typeof window.UnicornStudio.init === 'function') window.UnicornStudio.init();
+    });
   }
   if (has('[data-vimeo-bg-init]') && window.Vimeo && window.initVimeoBGVideo) window.initVimeoBGVideo(nextPage);
 }
