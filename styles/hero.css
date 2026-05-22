@@ -7,6 +7,13 @@
   opacity: 1;
 }
 
+.home_hero_content {
+  opacity: 0;
+}
+.wf-design-mode .home_hero_content {
+  opacity: 1;
+}
+
 .is-bouncing {
   animation: bounce 1s ease-in infinite alternate;
 }
