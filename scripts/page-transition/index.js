@@ -381,6 +381,7 @@ function initPageAnimations() {
     if (typeof window.UnicornStudio.destroy === 'function') window.UnicornStudio.destroy();
     if (typeof window.UnicornStudio.init === 'function') window.UnicornStudio.init();
   }
+  if (has('[data-vimeo-bg-init]') && window.Vimeo && window.initVimeoBGVideo) window.initVimeoBGVideo(nextPage);
 }
 
 // update the current nav item based on URL
