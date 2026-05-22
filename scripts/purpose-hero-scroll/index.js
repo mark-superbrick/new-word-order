@@ -107,7 +107,7 @@
         if (spark) {
           scrollTl.fromTo(spark,
             { scale: sparkStartScale, rotation: 0 },
-            { scale: 0.1, rotation: 180, opacity: 0, transformOrigin: "50% 50%", ease: "power2.out", duration: 1 },
+            { scale: 0.1, rotation: 180, transformOrigin: "50% 50%", ease: "power2.out", duration: 1 },
             "<"
           );
         }
