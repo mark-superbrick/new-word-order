@@ -72,7 +72,8 @@
             });
 
             if (themeSection === firstSection) {
-              firstSectionIsActive = themeSection !== lastSection;
+              var isOnlySection = firstSection === lastSection;
+              firstSectionIsActive = isOnlySection ? window.scrollY < 300 : true;
             }
           }
         });
