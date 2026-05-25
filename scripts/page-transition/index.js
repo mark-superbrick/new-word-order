@@ -417,6 +417,7 @@ function initPageAnimations() {
   }
   if (has('[data-vimeo-bg-init]') && window.Vimeo && window.initVimeoBGVideo) window.initVimeoBGVideo(nextPage);
   if (has('#contact-form-new-project') && window.initContactFormNewProject) window.initContactFormNewProject(nextPage);
+  if (has('#contact-form-not-sure-yet') && window.initContactFormNotSureYet) window.initContactFormNotSureYet(nextPage);
 }
 
 // update the current nav item based on URL
