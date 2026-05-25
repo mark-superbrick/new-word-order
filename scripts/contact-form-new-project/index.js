@@ -107,14 +107,68 @@ function initContactFormNewProject(scope) {
     });
   });
 
+  const SITE_ID = '69d59dcb21dd62ab1da50444';
+  const failEl = wrapper ? wrapper.querySelector('.w-form-fail') : null;
+
+  function submitFormData() {
+    const params = new URLSearchParams();
+
+    params.set('name', form.getAttribute('data-name'));
+    params.set('pageId', form.getAttribute('data-wf-page-id'));
+    params.set('elementId', form.getAttribute('data-wf-element-id'));
+    params.set('domain', window.location.host);
+    params.set('collectionId', '');
+    params.set('itemSlug', '');
+    params.set('source', window.location.href);
+    params.set('test', 'false');
+    params.set('dolphin', 'false');
+
+    form.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="hidden"][name="selected_type"]), textarea').forEach(function (el) {
+      const fieldName = el.getAttribute('data-name') || el.name;
+      if (fieldName) params.set('fields[' + fieldName + ']', el.value);
+    });
+
+    const firstCb = form.querySelector('input[type="checkbox"]');
+    if (firstCb) {
+      const cbName = firstCb.getAttribute('data-name') || firstCb.name;
+      params.set('fields[' + cbName + ']', form.querySelector('input[type="checkbox"]:checked') ? 'true' : 'false');
+    }
+
+    const firstRadio = form.querySelector('input[type="radio"]');
+    if (firstRadio) {
+      const radioName = firstRadio.getAttribute('data-name') || firstRadio.name;
+      params.set('fields[' + radioName + ']', form.querySelector('input[type="radio"]:checked') ? 'true' : 'false');
+    }
+
+    fetch('https://webflow.com/api/v1/form/' + SITE_ID, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'Accept': 'application/json, text/javascript, */*; q=0.01'
+      },
+      body: params.toString()
+    })
+    .then(function (res) {
+      if (res.ok) {
+        form.style.display = 'none';
+        if (successEl) successEl.style.display = 'block';
+      } else {
+        if (failEl) failEl.style.display = 'block';
+      }
+    })
+    .catch(function () {
+      if (failEl) failEl.style.display = 'block';
+    });
+  }
+
   form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
     const hasType = form.querySelector('.contact_select_type input[type="checkbox"]:checked');
     const hasTeam = form.querySelector('input[name="Team-Member"]:checked');
 
     if (!hasType || !hasTeam) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-
       if (!hasType && typeSection) typeSection.style.color = '#f64c4c';
       if (!hasTeam && teamSection) teamSection.style.color = '#f64c4c';
 
@@ -123,7 +177,10 @@ function initContactFormNewProject(scope) {
         const top = target.getBoundingClientRect().top + window.scrollY - 100;
         window.scrollTo({ top: top, behavior: 'smooth' });
       }
+      return;
     }
+
+    submitFormData();
   }, true);
 
   if (DEBUG) console.log('[contact-form-new-project] initialized');

@@ -59,6 +59,9 @@ function initAfterEnterFunctions(next) {
   // Runs after the enter animation completes
   // if (has('[data-something]')) initSomething();
 
+  // Re-bind Webflow tabs after Barba DOM swap
+  if (has('.w-tabs')) initWebflowTabs(nextPage);
+
   // Re-initialize Finsweet Attributes v2 list module so it rescans the new Barba container
   if (has('[fs-list-element="list"]') && window.FinsweetAttributes) {
     window.FinsweetAttributes.destroy('list');
@@ -353,6 +356,35 @@ function initBarbaNavUpdate(data) {
 }
 
 
+
+function initWebflowTabs(scope) {
+  scope = scope || document;
+  scope.querySelectorAll('.w-tab-menu').forEach(function (menu) {
+    const tabsWrapper = menu.closest('.w-tabs');
+    if (!tabsWrapper) return;
+
+    const links = menu.querySelectorAll('.w-tab-link');
+    const panes = tabsWrapper.querySelectorAll('.w-tab-pane');
+
+    links.forEach(function (link, index) {
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        links.forEach(function (l) {
+          l.classList.remove('w--current');
+          l.setAttribute('aria-selected', 'false');
+          l.setAttribute('tabindex', '-1');
+        });
+        panes.forEach(function (p) {
+          p.classList.remove('w--tab-active');
+        });
+        link.classList.add('w--current');
+        link.setAttribute('aria-selected', 'true');
+        link.removeAttribute('tabindex');
+        if (panes[index]) panes[index].classList.add('w--tab-active');
+      });
+    });
+  });
+}
 
 // -----------------------------------------
 // YOUR FUNCTIONS GO BELOW HERE
