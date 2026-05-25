@@ -15,6 +15,15 @@
  */
 
 const CONTACT_FORM_SITE_ID = '69d59dcb21dd62ab1da50444';
+const ERROR_COLOR = '#f64c4c';
+const SPINNER_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 18 17" fill="none" class="u-svg" style="animation:contactSpinner .8s linear infinite"><path d="M18 7.10272L17.4569 5.44886L9.35892 8.59327L9.87841 0H8.12121L8.6407 8.59327L0.543119 5.44886L0 7.10272L8.41873 9.26915L2.89457 15.9191L4.31628 16.9412L8.99981 9.68703L13.6837 16.9412L15.105 15.9191L9.58089 9.26915L18 7.10272Z" fill="currentColor"></path></svg>';
+
+if (!document.querySelector('#contactSpinnerStyle')) {
+  var style = document.createElement('style');
+  style.id = 'contactSpinnerStyle';
+  style.textContent = '@keyframes contactSpinner{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}';
+  document.head.appendChild(style);
+}
 
 function setupWebflowFormSubmit(form) {
   const wrapper = form.closest('.w-form');
@@ -32,6 +41,16 @@ function setupWebflowFormSubmit(form) {
   }
 
   function submitFormData() {
+    var submitBtn = form.querySelector('[type="submit"]');
+    var btnWrapper = submitBtn ? submitBtn.closest('.button') : null;
+    var labelDiv = btnWrapper ? btnWrapper.querySelector(':scope > div:not(.clickable_wrap):not(.button_icon)') : null;
+    var iconEl = btnWrapper ? btnWrapper.querySelector('.button_icon .u-svg') : null;
+    var originalLabel = labelDiv ? labelDiv.textContent : '';
+    var originalIconHTML = iconEl ? iconEl.outerHTML : '';
+    if (labelDiv) labelDiv.textContent = 'Please wait...';
+    if (iconEl) { iconEl.insertAdjacentHTML('afterend', SPINNER_SVG); iconEl.remove(); }
+    if (submitBtn) submitBtn.disabled = true;
+
     const params = new URLSearchParams();
 
     params.set('name', form.getAttribute('data-name'));
@@ -74,12 +93,21 @@ function setupWebflowFormSubmit(form) {
         form.style.display = 'none';
         if (successEl) successEl.style.display = 'block';
       } else {
+        restoreBtn();
         if (failEl) failEl.style.display = 'block';
       }
     })
     .catch(function () {
+      restoreBtn();
       if (failEl) failEl.style.display = 'block';
     });
+
+    function restoreBtn() {
+      if (labelDiv) labelDiv.textContent = originalLabel;
+      if (submitBtn) submitBtn.disabled = false;
+      var spinnerEl = btnWrapper ? btnWrapper.querySelector('.button_icon .u-svg') : null;
+      if (spinnerEl && originalIconHTML) { spinnerEl.insertAdjacentHTML('afterend', originalIconHTML); spinnerEl.remove(); }
+    }
   }
 
   return submitFormData;
@@ -148,11 +176,16 @@ function initContactFormNewProject(scope) {
   }
 
   checkboxes.forEach(function (cb) {
-    cb.addEventListener('change', function () {
-      const customInput = cb.closest('label').querySelector('.w-checkbox-input');
-      if (customInput) customInput.classList.toggle('w--redirected-checked', cb.checked);
-      updateTypeFields();
-    });
+    var label = cb.closest('label');
+    var customInput = label ? label.querySelector('.w-checkbox-input') : null;
+    if (label) {
+      label.addEventListener('click', function (e) {
+        e.preventDefault();
+        cb.checked = !cb.checked;
+        if (customInput) customInput.classList.toggle('w--redirected-checked', cb.checked);
+        updateTypeFields();
+      });
+    }
   });
 
   radios.forEach(function (radio) {
@@ -175,8 +208,8 @@ function initContactFormNewProject(scope) {
     const hasTeam = form.querySelector('input[name="Team-Member"]:checked');
 
     if (!hasType || !hasTeam) {
-      if (!hasType && typeSection) typeSection.style.color = '#f64c4c';
-      if (!hasTeam && teamSection) teamSection.style.color = '#f64c4c';
+      if (!hasType && typeSection) typeSection.style.color = ERROR_COLOR;
+      if (!hasTeam && teamSection) teamSection.style.color = ERROR_COLOR;
 
       const target = !hasType ? typeSection : teamSection;
       if (target) {
