@@ -1,5 +1,5 @@
 /**
- * contact-form-new-project — hidden field sync, validation, and fetch submission
+ * contact-form — hidden field sync, validation, and fetch submission
  *
  * Handles two forms on the contact page:
  *   #contact-form-new-project — checkboxes, radios, hidden fields, validation
@@ -8,10 +8,10 @@
  * Both use fetch-based submission to Webflow's API (required after Barba transitions).
  *
  * Staging CDN:
- *   https://cdn.jsdelivr.net/gh/mark-superbrick/new-word-order@staging/scripts/contact-form-new-project/index.js
+ *   https://cdn.jsdelivr.net/gh/mark-superbrick/new-word-order@staging/scripts/contact-form/index.js
  *
  * Production CDN:
- *   https://cdn.jsdelivr.net/gh/mark-superbrick/new-word-order@main/scripts/contact-form-new-project/index.js
+ *   https://cdn.jsdelivr.net/gh/mark-superbrick/new-word-order@main/scripts/contact-form/index.js
  */
 
 const CONTACT_FORM_SITE_ID = '69d59dcb21dd62ab1da50444';
