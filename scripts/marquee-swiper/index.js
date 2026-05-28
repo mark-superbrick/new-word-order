@@ -52,10 +52,11 @@
           speed: 600,
           centeredSlides: true,
           slideActiveClass: 'is-active',    
+          
+          
+          slidesPerView: 3,
+          spaceBetween: 20,
           effect: "coverflow",
-          
-          
-          slidesPerView: "auto",
           coverflowEffect: {
             rotate: 0,
             stretch: 0,
@@ -63,7 +64,6 @@
             modifier: 1,
             slideShadows: true,
           },
-          spaceBetween: 60,
           loop: true,
           duration: 600,
           autoplay: {
@@ -76,20 +76,22 @@
             el: '.swiper-scrollbar',
             hide: false,
           },
-          // breakpoints: {
-          //   // when window width is >= 480px
-          //   480: {
-          //     slidesPerView: 1.8,
-          //   },
-          //   // when window width is >= 992px
-          //   992: {
-          //     slidesPerView: 3,
-          //   },
-          //   1200: {
-          //     slidesPerView: 4,
-          //     spaceBetween: 80,
-          //   }
-          // },
+          breakpoints: {
+            // when window width is >= 480px
+            480: {
+              // slidesPerView: 2,
+              spaceBetween: 30, 
+            },
+            // when window width is >= 992px
+            992: {
+              // slidesPerView: 2,
+              spaceBetween: 40,
+            },
+            1200: {
+              // slidesPerView: "auto",
+              spaceBetween: 80,
+            }
+          },
           // navigation: {
           //   nextEl: nextButton,
           //   prevEl: prevButton,
