@@ -62,10 +62,11 @@ function initAfterEnterFunctions(next) {
   // Re-bind Webflow tabs after Barba DOM swap
   if (has('.w-tabs')) initWebflowTabs(nextPage);
 
-  // Re-initialize Finsweet Attributes v2 list module so it rescans the new Barba container
+  // destroy is async — chain load so it only runs after teardown completes
   if (has('[fs-list-element="list"]') && window.FinsweetAttributes) {
-    window.FinsweetAttributes.destroy('list');
-    window.FinsweetAttributes.load('list');
+    Promise.resolve(window.FinsweetAttributes.destroy('list')).then(() => {
+      window.FinsweetAttributes.load('list');
+    });
   }
 
   // Page-specific animations that should run on every page can be called here, or within their own init functions that are called here. For example:
