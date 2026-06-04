@@ -76,7 +76,7 @@
             end: () => `+=${totalScroll}`,
             scrub: true,
             pin: true,
-            pinSpacing: true,
+            pinSpacing: false,
             invalidateOnRefresh: true,
             markers: DEBUG,
             id: "main",
