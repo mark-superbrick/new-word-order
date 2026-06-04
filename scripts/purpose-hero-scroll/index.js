@@ -27,15 +27,15 @@
       if (content) content.style.transform = 'translateZ(0)';
 
       // Initial states
-      const sparkStartScale = 6;
+      const sparkStartScale = 3;
       // if (mediaOverlay) gsap.set(mediaOverlay, { autoAlpha: 0 });
       if (spark) gsap.set(spark, { scale: sparkStartScale, transformOrigin: "50% 50%" });
       if (content) gsap.set(content, { xPercent: 100, autoAlpha: 1 });
 
       // Entry animation
-      const entry = gsap.timeline({ defaults: { duration: 1, ease: "power3.out" } });
-      // entry.to(mediaOverlay || {}, { autoAlpha: 1 }, 0);
-      entry.to(spark || {}, { scale: sparkStartScale, transformOrigin: "50% 50%" }, 0);
+      const entry = gsap.timeline({ defaults: { duration: 3.2, ease: "power3.out" } });
+      if(heroImg) entry.to(heroImg, { xPercent: 0, autoAlpha: 1 }, 0);
+      if(spark) entry.to(spark, { scale: sparkStartScale }, 0);
       entry.to(content || {}, { xPercent: 0 }, 0.05);
 
       // Idle mouse parallax — heroImg: deep, spark: mid, content: shallow
@@ -62,7 +62,7 @@
       }
 
       function heroTL() {
-        const totalScroll = window.innerHeight * 2;
+        const totalScroll = window.innerHeight * 1;
         let lastValue = -1;
         const overlayProxy = { n: 0 };
 
@@ -73,7 +73,7 @@
             end: () => `+=${totalScroll}`,
             scrub: true,
             pin: true,
-            pinSpacing: true,
+            pinSpacing: false,
             invalidateOnRefresh: true,
             markers: DEBUG,
             id: "main",
@@ -91,23 +91,25 @@
         }
         
         // Phase 2 [1→2]: data-number ticks to 100
-        scrollTl.to(overlayProxy, {
-          n: 100,
-          ease: "none",
-          duration: 1,
-          onUpdate() {
-            const v = Math.round(overlayProxy.n);
-            if (v === lastValue) return;
-            lastValue = v;
-            if (mediaOverlay) mediaOverlay.setAttribute("data-number", String(v));
-          }
-        }, "<");
+        if (mediaOverlay) {
+          scrollTl.to(overlayProxy, {
+            n: 100,
+            ease: "none",
+            duration: 1,
+            onUpdate() {
+              const v = Math.round(overlayProxy.n);
+              if (v === lastValue) return;
+              lastValue = v;
+              mediaOverlay.setAttribute("data-number", String(v));
+            }
+          }, "<");
+        }
 
         // Phase 3 [2→3]: spark scales down
         if (spark) {
           scrollTl.fromTo(spark,
-            { scale: sparkStartScale, rotation: 0 },
-            { scale: 0.1, rotation: 180, transformOrigin: "50% 50%", ease: "power2.out", duration: 1 },
+            { scale: sparkStartScale, rotation: 0, transformOrigin: "50% 50%" },
+            { scale: 0.1, rotation: 180, ease: "power2.out", duration: 1 },
             "<"
           );
         }
