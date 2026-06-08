@@ -36,14 +36,15 @@
         if (!marqueeContent || !marqueeScroll) return;
 
         // Get data attributes
-        const { marqueeSpeed: speed, marqueeDirection: direction, marqueeDuplicate: duplicate, marqueeScrollSpeed: scrollSpeed } = marquee.dataset;
+        const { marqueeSpeed: speed, marqueeDirection: direction, marqueeDuplicate: duplicate, marqueeScrollSpeed: scrollSpeed, marqueeScrollSpeedMobile: scrollSpeedMobile } = marquee.dataset;
 
         // Convert data attributes to usable types
         const marqueeSpeedAttr = parseFloat(speed);
         const marqueeDirectionAttr = direction === 'right' ? 1 : -1; // 1 for right, -1 for left
         const duplicateAmount = parseInt(duplicate || 0);
-        const scrollSpeedAttr = parseFloat(scrollSpeed);
-        const speedMultiplier = window.innerWidth < 479 ? 0.25 : window.innerWidth < 991 ? 0.5 : 1;
+        const scrollSpeedMobileAttr = parseFloat(scrollSpeedMobile);
+        const scrollSpeedAttr = (window.innerWidth <= 767 && !isNaN(scrollSpeedMobileAttr)) ? scrollSpeedMobileAttr : parseFloat(scrollSpeed);
+        const speedMultiplier = window.innerWidth < 479 ? 0.5 : window.innerWidth < 991 ? 0.75 : 1;
 
         let marqueeSpeed = marqueeSpeedAttr * (marqueeContent.offsetWidth / window.innerWidth) * speedMultiplier;
 
