@@ -189,13 +189,22 @@ function initContactFormNewProject(scope) {
   });
 
   radios.forEach(function (radio) {
-    radio.addEventListener('change', function () {
+    var label = radio.closest('label');
+    if (!label) return;
+    label.addEventListener('click', function (e) {
+      e.preventDefault();
+      var willCheck = !radio.checked;
       radios.forEach(function (r) {
-        const ri = r.closest('label').querySelector('.w-form-formradioinput');
-        if (ri) ri.classList.remove('w--redirected-checked');
+        r.checked = false;
+        var rLabel = r.closest('label');
+        var rInput = rLabel ? rLabel.querySelector('.w-form-formradioinput') : null;
+        if (rInput) rInput.classList.remove('w--redirected-checked');
       });
-      const ri = radio.closest('label').querySelector('.w-form-formradioinput');
-      if (ri) ri.classList.add('w--redirected-checked');
+      if (willCheck) {
+        radio.checked = true;
+        var input = label.querySelector('.w-form-formradioinput');
+        if (input) input.classList.add('w--redirected-checked');
+      }
       updateTeamField();
     });
   });
