@@ -15,7 +15,6 @@
  */
 
 const CONTACT_FORM_SITE_ID = '69d59dcb21dd62ab1da50444';
-const ERROR_COLOR = '#f64c4c';
 const SPINNER_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 18 17" fill="none" class="u-svg" style="animation:contactSpinner .8s linear infinite"><path d="M18 7.10272L17.4569 5.44886L9.35892 8.59327L9.87841 0H8.12121L8.6407 8.59327L0.543119 5.44886L0 7.10272L8.41873 9.26915L2.89457 15.9191L4.31628 16.9412L8.99981 9.68703L13.6837 16.9412L15.105 15.9191L9.58089 9.26915L18 7.10272Z" fill="currentColor"></path></svg>';
 
 if (!document.querySelector('#contactSpinnerStyle')) {
@@ -113,6 +112,65 @@ function setupWebflowFormSubmit(form) {
   return submitFormData;
 }
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DEFAULT_ERROR = 'This field is required';
+const EMAIL_ERROR = 'Please enter a valid email';
+
+function setFieldState(el, isValid, message) {
+  if (!el) return;
+  el.classList.toggle('is-invalid', !isValid);
+  el.classList.toggle('is-valid', isValid);
+
+  let err = el.querySelector(':scope > .form_error_helper');
+  if (!isValid && message) {
+    if (!err) {
+      err = document.createElement('div');
+      err.className = 'form_error_helper';
+      el.appendChild(err);
+    }
+    err.textContent = message;
+  } else if (err) {
+    err.remove();
+  }
+}
+
+function validateTextField(input) {
+  const value = input.value.trim();
+  let valid = value !== '';
+  let message = input.getAttribute('data-error') || DEFAULT_ERROR;
+  if (valid && input.type === 'email' && !EMAIL_RE.test(value)) {
+    valid = false;
+    message = EMAIL_ERROR;
+  }
+  setFieldState(input.closest('.form_field-wrapper'), valid, message);
+  return valid;
+}
+
+// Wires required-text-field validation onto a form: disables native validation,
+// re-validates each field live after the first submit attempt, and exposes a
+// validateFields() that returns the first invalid wrapper (or null).
+function setupFieldValidation(form) {
+  form.noValidate = true;
+  const requiredFields = form.querySelectorAll('.form_field-wrapper input[required]');
+  const api = { validated: false };
+
+  requiredFields.forEach(function (input) {
+    input.addEventListener('input', function () {
+      if (api.validated) validateTextField(input);
+    });
+  });
+
+  api.validateFields = function () {
+    let firstInvalid = null;
+    requiredFields.forEach(function (input) {
+      if (!validateTextField(input)) firstInvalid = firstInvalid || input.closest('.form_field-wrapper');
+    });
+    return firstInvalid;
+  };
+
+  return api;
+}
+
 function initContactFormNewProject(scope) {
   scope = scope || document;
   const host = window.location.host;
@@ -126,6 +184,7 @@ function initContactFormNewProject(scope) {
   const form = scope.querySelector('#contact-form-new-project');
   if (!form) return;
 
+  const fieldValidation = setupFieldValidation(form);
   const submitFormData = setupWebflowFormSubmit(form);
 
   const hiddenBrand = form.querySelector('input[name="selected_brand"]');
@@ -142,7 +201,6 @@ function initContactFormNewProject(scope) {
   };
 
   const typeSection = form.querySelector('.contact_select_type');
-  const teamSection = form.querySelector('.contact_select_team');
 
   function updateTypeFields() {
     Object.keys(categoryMap).forEach(function (category) {
@@ -158,10 +216,6 @@ function initContactFormNewProject(scope) {
       });
       field.value = selected.join(', ');
     });
-
-    if (typeSection && form.querySelector('.contact_select_type input[type="checkbox"]:checked')) {
-      typeSection.style.color = '';
-    }
   }
 
   function updateTeamField() {
@@ -169,10 +223,19 @@ function initContactFormNewProject(scope) {
     if (hiddenTeam) {
       hiddenTeam.value = checked ? checked.getAttribute('data-value') : '';
     }
+  }
 
-    if (teamSection && checked) {
-      teamSection.style.color = '';
-    }
+  function validateType() {
+    const valid = !!form.querySelector('.contact_select_type input[type="checkbox"]:checked');
+    const message = (typeSection && typeSection.getAttribute('data-error')) || DEFAULT_ERROR;
+    setFieldState(typeSection, valid, message);
+    return valid;
+  }
+
+  function validateForm() {
+    const typeValid = validateType();
+    const firstInvalidField = fieldValidation.validateFields();
+    return typeValid ? firstInvalidField : typeSection;
   }
 
   checkboxes.forEach(function (cb) {
@@ -184,6 +247,7 @@ function initContactFormNewProject(scope) {
         cb.checked = !cb.checked;
         if (customInput) customInput.classList.toggle('w--redirected-checked', cb.checked);
         updateTypeFields();
+        if (fieldValidation.validated) validateType();
       });
     }
   });
@@ -213,18 +277,12 @@ function initContactFormNewProject(scope) {
     e.preventDefault();
     e.stopImmediatePropagation();
 
-    const hasType = form.querySelector('.contact_select_type input[type="checkbox"]:checked');
-    const hasTeam = form.querySelector('input[name="Team-Member"]:checked');
+    fieldValidation.validated = true;
+    const firstInvalid = validateForm();
 
-    if (!hasType || !hasTeam) {
-      if (!hasType && typeSection) typeSection.style.color = ERROR_COLOR;
-      if (!hasTeam && teamSection) teamSection.style.color = ERROR_COLOR;
-
-      const target = !hasType ? typeSection : teamSection;
-      if (target) {
-        const top = target.getBoundingClientRect().top + window.scrollY - 100;
-        window.scrollTo({ top: top, behavior: 'smooth' });
-      }
+    if (firstInvalid) {
+      const top = firstInvalid.getBoundingClientRect().top + window.scrollY - 100;
+      window.scrollTo({ top: top, behavior: 'smooth' });
       return;
     }
 
@@ -244,11 +302,22 @@ function initContactFormNotSureYet(scope) {
   const form = scope.querySelector('#contact-form-not-sure-yet');
   if (!form) return;
 
+  const fieldValidation = setupFieldValidation(form);
   const submitFormData = setupWebflowFormSubmit(form);
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     e.stopImmediatePropagation();
+
+    fieldValidation.validated = true;
+    const firstInvalid = fieldValidation.validateFields();
+
+    if (firstInvalid) {
+      const top = firstInvalid.getBoundingClientRect().top + window.scrollY - 100;
+      window.scrollTo({ top: top, behavior: 'smooth' });
+      return;
+    }
+
     submitFormData();
   }, true);
 
