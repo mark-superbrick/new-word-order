@@ -44,10 +44,9 @@
         const duplicateAmount = parseInt(duplicate || 0);
         const scrollSpeedMobileAttr = parseFloat(scrollSpeedMobile);
         const scrollSpeedAttr = (window.innerWidth <= 767 && !isNaN(scrollSpeedMobileAttr)) ? scrollSpeedMobileAttr : parseFloat(scrollSpeed);
-        // const speedMultiplier = window.innerWidth < 479 ? 0.5 : window.innerWidth < 991 ? 0.75 : 1;
+        const speedMultiplier = window.innerWidth < 479 ? 2 : window.innerWidth < 991 ? 1.5 : 1;
 
-        // let marqueeSpeed = marqueeSpeedAttr * (marqueeContent.offsetWidth / window.innerWidth) * speedMultiplier;
-        let marqueeSpeed = marqueeSpeedAttr * (marqueeContent.offsetWidth / window.innerWidth);
+        let marqueeSpeed = marqueeSpeedAttr * (marqueeContent.offsetWidth / window.innerWidth) * speedMultiplier;
 
         // Precompute styles for the scroll container
         marqueeScroll.style.marginLeft = `${scrollSpeedAttr * -1}%`;
