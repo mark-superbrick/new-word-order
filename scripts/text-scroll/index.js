@@ -30,6 +30,7 @@
       const blurFull   = reduceBlur ? 'blur(0px)' : 'blur(40px)';
 
       wrappers.forEach((wrapper, index) => {
+        const yPercent = wrapper.getAttribute('data-text-scroll-ypercent') || "100";
         const items = wrapper.querySelectorAll('[data-text-scroll-item]');
         if (!items || items.length === 0) return;
 
@@ -53,7 +54,7 @@
           let lastSegment = -1;
           const isOnlyItem = totalItems === 1;
 
-          gsap.set(items, { yPercent: 100, opacity: 0, filter: blurFull, overwrite: true });
+          gsap.set(items, { yPercent: yPercent, opacity: 0, filter: blurFull, overwrite: true });
 
           const tl = gsap.timeline({
             scrollTrigger: {
