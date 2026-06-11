@@ -19,9 +19,25 @@ body{
 .swiper-slide:last-of-type{
   margin-right: calc(-1 * var(--gap));
 } */
-.swiper-slide {
+
+.wf-design-mode .swiper-slide.is-marquee-swiper {
+  max-width: 33%;
+}
+
+.swiper-slide.is-marquee-swiper {
   overflow: hidden !important;
   border-radius: 0.5em;
+  max-width: 80%;
+}
+@media screen and (min-width: 768px) {
+  .swiper-slide.is-marquee-swiper {
+    max-width: 50%;
+  }
+}
+@media screen and (min-width: 768px) {
+  .swiper-slide.is-marquee-swiper {
+    max-width: 33%;
+  }
 }
 /* 
 .swiper-slide.is-active {

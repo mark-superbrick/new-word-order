@@ -54,8 +54,8 @@
           slideActiveClass: 'is-active',    
           
           
-          slidesPerView: 3,
-          spaceBetween: 20,
+          slidesPerView: "auto",
+          spaceBetween: 0,
           effect: "coverflow",
           coverflowEffect: {
             rotate: 0,
@@ -63,7 +63,9 @@
             depth: 100,
             modifier: 1,
             slideShadows: true,
+            scale: 1,
           },
+          centeredSlides: true,
           loop: true,
           duration: 600,
           autoplay: {
@@ -79,16 +81,21 @@
           breakpoints: {
             // when window width is >= 480px
             480: {
-              // slidesPerView: 2,
-              spaceBetween: 30, 
+              // slidesPerView: "auto",
+              spaceBetween: 20, 
+            },
+            // when window width is >= 768px
+            768: {
+              // slidesPerView: "auto",
+              spaceBetween: 30,
             },
             // when window width is >= 992px
             992: {
-              // slidesPerView: 2,
+              // slidesPerView: 3,
               spaceBetween: 40,
             },
             1200: {
-              // slidesPerView: "auto",
+              // slidesPerView: 3,
               spaceBetween: 80,
             }
           },
