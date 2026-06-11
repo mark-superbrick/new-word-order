@@ -143,25 +143,31 @@
         pin: true,
         scrub: true,
         invalidateOnRefresh: true,
-        snap: {
-          snapTo: 1 / (items.length - 1),
-          duration: { min: 0.2, max: 0.5 },
-          ease: 'power1.inOut'
-        }
+        // snap: {
+        //   snapTo: 1 / (items.length - 1),
+        //   duration: { min: 0.2, max: 0.5 },
+        //   ease: 'power1.inOut'
+        // }
       }
     });
 
+    // Each transition is one timeline unit. The image crossfades across the whole
+    // unit, but the copy is sequenced: outgoing copy fully fades out in the first
+    // half, incoming copy fades in during the second half — so the text never overlaps.
     for (let i = 1; i < items.length; i++) {
       const prevCopy  = getCopy(items[i - 1]);
       const prevImage = getImage(items[i - 1]);
       const curCopy   = getCopy(items[i]);
       const curImage  = getImage(items[i]);
 
-      tl.to(prevCopy,  { y: COPY_OUT_Y, autoAlpha: 0, ease: 'power2.in' })            // outgoing copy: up + fade
-        .to(prevImage, { autoAlpha: 0 }, '<')                                          // outgoing image: fade out
-        .to(curImage,  { autoAlpha: 1 }, '<')                                          // incoming image: fade in
+      const segStart = i - 1;
+      const half = 0.5;
+
+      tl.to(prevImage, { autoAlpha: 0, duration: 1 }, segStart)                        // outgoing image: fade out
+        .to(curImage,  { autoAlpha: 1, duration: 1 }, segStart)                        // incoming image: fade in
+        .to(prevCopy,  { y: COPY_OUT_Y, autoAlpha: 0, duration: half, ease: 'power2.in' }, segStart)         // outgoing copy: up + fade (first half)
         .fromTo(curCopy, { y: COPY_IN_Y, autoAlpha: 0 },
-                         { y: 0, autoAlpha: 1, ease: 'power2.out' }, '<');             // incoming copy: fade up
+                         { y: 0, autoAlpha: 1, duration: half, ease: 'power2.out' }, segStart + half);       // incoming copy: fade up (second half)
     }
 
     if (DEBUG) console.log('[sticky-steps] scroll-jack initialized on ' + items.length + ' step(s)');
