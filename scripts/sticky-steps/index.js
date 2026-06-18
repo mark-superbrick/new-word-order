@@ -143,6 +143,10 @@
         pin: true,
         scrub: true,
         invalidateOnRefresh: true,
+        // Sits above text-bg-scroll on the page but is created after it (page-transition
+        // init order), and only pins on mobile. Refresh first so its pin-spacer is in
+        // place before lower pins measure their start — otherwise they engage too early.
+        refreshPriority: 1,
         // snap: {
         //   snapTo: 1 / (items.length - 1),
         //   duration: { min: 0.2, max: 0.5 },
