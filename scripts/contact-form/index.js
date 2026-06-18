@@ -91,6 +91,10 @@ function setupWebflowFormSubmit(form) {
       if (res.ok) {
         form.style.display = 'none';
         if (successEl) successEl.style.display = 'block';
+        // Hiding the form shrinks the page height, which moves the footer up.
+        // ScrollTrigger caches pixel start/end, so the footer parallax freezes
+        // against stale positions unless we recalc for the new layout.
+        if (window.ScrollTrigger) window.ScrollTrigger.refresh();
       } else {
         restoreBtn();
         if (failEl) failEl.style.display = 'block';
