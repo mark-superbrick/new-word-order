@@ -382,6 +382,7 @@ function initWebflowTabs(scope) {
         link.setAttribute('aria-selected', 'true');
         link.removeAttribute('tabindex');
         if (panes[index]) panes[index].classList.add('w--tab-active');
+        if (window.ScrollTrigger) window.ScrollTrigger.refresh();
       });
     });
   });

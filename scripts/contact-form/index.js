@@ -32,8 +32,11 @@ function setupWebflowFormSubmit(form) {
   if (successEl) {
     const observer = new MutationObserver(function () {
       if (successEl.style.display !== 'none' && successEl.style.display !== '') {
-        const top = wrapper.getBoundingClientRect().top + window.scrollY - 100;
-        window.scrollTo({ top: top, behavior: 'smooth' });
+        if (window.ScrollTrigger) window.ScrollTrigger.refresh();
+        requestAnimationFrame(function () {
+          const top = wrapper.getBoundingClientRect().top + window.scrollY - 100;
+          window.scrollTo({ top: top, behavior: 'smooth' });
+        });
       }
     });
     observer.observe(successEl, { attributes: true, attributeFilter: ['style'] });
@@ -91,10 +94,6 @@ function setupWebflowFormSubmit(form) {
       if (res.ok) {
         form.style.display = 'none';
         if (successEl) successEl.style.display = 'block';
-        // Hiding the form shrinks the page height, which moves the footer up.
-        // ScrollTrigger caches pixel start/end, so the footer parallax freezes
-        // against stale positions unless we recalc for the new layout.
-        if (window.ScrollTrigger) window.ScrollTrigger.refresh();
       } else {
         restoreBtn();
         if (failEl) failEl.style.display = 'block';
